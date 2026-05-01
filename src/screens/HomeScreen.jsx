@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import './HomeScreen.css';
 import '../screens/profile/ProfilePages.css';
 
@@ -9,6 +10,7 @@ const SUPPORT_NUMBER = '8839533202';
 export default function HomeScreen() {
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
+  const { isEnabled } = useFeatureFlags();
   const [location, setLocation] = useState(state.userLocation || 'Detecting location...');
   const [loadingLocation, setLoadingLocation] = useState(false);
 
@@ -106,12 +108,13 @@ export default function HomeScreen() {
     window.open(`https://wa.me/91${SUPPORT_NUMBER}?text=${message}`, '_blank');
   };
 
-  const services = [
-    { id: 'inspection', name: 'Book\nInspection', emoji: '🔍', color: '#FFF3E0', path: '/inspection/service' },
-    { id: 'buy', name: 'Buy\nCar', emoji: '🚗', color: '#E3F2FD', path: '/buy-cars' },
-    { id: 'sell', name: 'Sell\nCar', emoji: '💰', color: '#E8F5E9', path: '/sell-car' },
-    { id: 'accessories', name: 'Accessories', emoji: '🔧', color: '#F3E5F5', path: '/accessories' }
+  const allServices = [
+    { id: 'inspection', featureKey: 'inspection', name: 'Book\nInspection', emoji: '🔍', color: '#FFF3E0', path: '/inspection/service' },
+    { id: 'buy', featureKey: 'buy_cars', name: 'Buy\nCar', emoji: '🚗', color: '#E3F2FD', path: '/buy-cars' },
+    { id: 'sell', featureKey: 'sell_car', name: 'Sell\nCar', emoji: '💰', color: '#E8F5E9', path: '/sell-car' },
+    { id: 'accessories', featureKey: 'accessories', name: 'Accessories', emoji: '🔧', color: '#F3E5F5', path: '/accessories' }
   ];
+  const services = allServices.filter(s => isEnabled(s.featureKey));
 
   const whyChoose = [
     { icon: '✅', title: 'Verified Mechanics' },
@@ -185,6 +188,7 @@ export default function HomeScreen() {
       </div>
 
       {/* Emergency Section */}
+      {isEnabled('emergency') && (
       <div className="home-emergency-section">
         <h3 className="home-section-title">🚨 Emergency Services</h3>
         <div className="emergency-grid">
@@ -210,6 +214,7 @@ export default function HomeScreen() {
           </button>
         </div>
       </div>
+      )}
 
       {/* Why Choose Auto Pro */}
       <div className="home-why-section">
@@ -225,6 +230,7 @@ export default function HomeScreen() {
       </div>
 
       {/* WhatsApp Floating Button */}
+      {isEnabled('whatsapp_support') && (
       <button
         className="whatsapp-float"
         onClick={handleWhatsApp}
@@ -236,6 +242,7 @@ export default function HomeScreen() {
         </svg>
         <span className="whatsapp-float-tooltip">Chat with us</span>
       </button>
+      )}
     </div>
   );
 }

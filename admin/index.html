@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Pro - Admin Panel</title>
+  <link rel="icon" href="/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-box">
+      <img src="/logo.png" alt="Auto Pro" class="login-logo">
+      <h1>Admin Panel</h1>
+      <p>Auto Pro Control Center</p>
+      <div class="form-group">
+        <label>Admin Email</label>
+        <input type="email" id="admin-email" placeholder="admin@autopro.in">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="admin-password" placeholder="Enter password">
+      </div>
+      <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+      <p id="login-error" class="error-text"></p>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="admin-dashboard" class="dashboard" style="display:none">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="/logo.png" alt="Auto Pro" class="sidebar-logo">
+        <h2>Auto Pro</h2>
+        <span class="sidebar-badge">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showSection('dashboard')" data-section="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </button>
+        <button class="nav-item" onclick="showSection('features')" data-section="features">
+          <span class="nav-icon">🎛️</span> Feature Toggles
+        </button>
+        <button class="nav-item" onclick="showSection('listings')" data-section="listings">
+          <span class="nav-icon">🚗</span> Car Listings
+        </button>
+        <button class="nav-item" onclick="showSection('bookings')" data-section="bookings">
+          <span class="nav-icon">📋</span> Bookings
+        </button>
+        <button class="nav-item" onclick="showSection('users')" data-section="users">
+          <span class="nav-icon">👥</span> Users
+        </button>
+        <button class="nav-item" onclick="showSection('emergency')" data-section="emergency">
+          <span class="nav-icon">🚨</span> Emergency
+        </button>
+        <button class="nav-item" onclick="showSection('support')" data-section="support">
+          <span class="nav-icon">💬</span> Support
+        </button>
+        <button class="nav-item" onclick="showSection('settings')" data-section="settings">
+          <span class="nav-icon">⚙️</span> App Settings
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="nav-item logout" onclick="handleLogout()">
+          <span class="nav-icon">🚪</span> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <h2 id="mobile-title">Dashboard</h2>
+      <div class="admin-avatar">A</div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+      
+      <!-- Dashboard Section -->
+      <section id="section-dashboard" class="section active">
+        <div class="section-header">
+          <h2>Dashboard Overview</h2>
+          <p class="section-desc">Welcome back, Admin</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-users">0</p>
+              <p class="stat-label">Total Users</p>
+            </div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-bookings">0</p>
+              <p class="stat-label">Total Bookings</p>
+            </div>
+          </div>
+          <div class="stat-card stat-orange">
+            <div class="stat-icon">🚗</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-listings">0</p>
+              <p class="stat-label">Car Listings</p>
+            </div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-info">
+              <p class="stat-value" id="stat-emergency">0</p>
+              <p class="stat-label">Emergency Requests</p>
+            </div>
+          </div>
+        </div>
+        <div class="recent-section">
+          <h3>Recent Activity</h3>
+          <div id="recent-activity" class="activity-list">
+            <div class="activity-item">
+              <span class="activity-icon">📋</span>
+              <div class="activity-info">
+                <p class="activity-text">New booking received</p>
+                <p class="activity-time">Just now</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature Toggles Section -->
+      <section id="section-features" class="section">
+        <div class="section-header">
+          <h2>Feature Toggles</h2>
+          <p class="section-desc">Enable or disable features without updating the customer app</p>
+        </div>
+        <div class="toggle-grid" id="feature-toggles">
+          <!-- Generated by JS -->
+        </div>
+        <button class="btn btn-primary mt-24" onclick="saveFeatureToggles()">💾 Save Changes</button>
+      </section>
+
+      <!-- Car Listings Section -->
+      <section id="section-listings" class="section">
+        <div class="section-header">
+          <h2>Car Listings</h2>
+          <p class="section-desc">Review and moderate car listings from sellers</p>
+        </div>
+        <div class="tab-bar">
+          <button class="tab active" onclick="filterListings('pending')" data-tab="pending">⏳ Pending</button>
+          <button class="tab" onclick="filterListings('approved')" data-tab="approved">✅ Approved</button>
+          <button class="tab" onclick="filterListings('rejected')" data-tab="rejected">❌ Rejected</button>
+          <button class="tab" onclick="filterListings('all')" data-tab="all">📋 All</button>
+        </div>
+        <div id="listings-list" class="listings-grid">
+          <!-- Generated by JS -->
+        </div>
+      </section>
+
+      <!-- Bookings Section -->
+      <section id="section-bookings" class="section">
+        <div class="section-header">
+          <h2>Bookings</h2>
+          <p class="section-desc">Manage customer inspection bookings</p>
+        </div>
+        <div class="tab-bar">
+          <button class="tab active" onclick="filterBookings('all')">All</button>
+          <button class="tab" onclick="filterBookings('pending')">Pending</button>
+          <button class="tab" onclick="filterBookings('confirmed')">Confirmed</button>
+          <button class="tab" onclick="filterBookings('completed')">Completed</button>
+        </div>
+        <div id="bookings-list" class="table-container">
+          <!-- Generated by JS -->
+        </div>
+      </section>
+
+      <!-- Users Section -->
+      <section id="section-users" class="section">
+        <div class="section-header">
+          <h2>Users</h2>
+          <p class="section-desc">View and manage registered users</p>
+        </div>
+        <div id="users-list" class="table-container">
+          <!-- Generated by JS -->
+        </div>
+      </section>
+
+      <!-- Emergency Section -->
+      <section id="section-emergency" class="section">
+        <div class="section-header">
+          <h2>Emergency Requests</h2>
+          <p class="section-desc">Monitor emergency service requests</p>
+        </div>
+        <div id="emergency-list" class="listings-grid">
+          <!-- Generated by JS -->
+        </div>
+      </section>
+
+      <!-- Support Section -->
+      <section id="section-support" class="section">
+        <div class="section-header">
+          <h2>Customer Support</h2>
+          <p class="section-desc">View and respond to customer queries</p>
+        </div>
+        <div class="support-info-card">
+          <h3>📱 Support Number</h3>
+          <p class="support-number">+91 8839533202</p>
+          <p class="support-desc">WhatsApp & Call support number configured in the customer app</p>
+        </div>
+        <div id="support-list" class="listings-grid">
+          <!-- Generated by JS -->
+        </div>
+      </section>
+
+      <!-- App Settings Section -->
+      <section id="section-settings" class="section">
+        <div class="section-header">
+          <h2>App Settings</h2>
+          <p class="section-desc">Configure global app settings</p>
+        </div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label>App Name</label>
+            <input type="text" id="setting-app-name" value="Auto Pro">
+          </div>
+          <div class="form-group">
+            <label>Support WhatsApp Number</label>
+            <input type="text" id="setting-support-number" value="8839533202">
+          </div>
+          <div class="form-group">
+            <label>Support Email</label>
+            <input type="email" id="setting-support-email" value="support@autopro.in">
+          </div>
+          <div class="form-group">
+            <label>Minimum App Version</label>
+            <input type="text" id="setting-min-version" value="1.0.0">
+          </div>
+          <div class="form-group">
+            <label>Maintenance Mode Message</label>
+            <textarea id="setting-maintenance-msg" rows="3" placeholder="App is under maintenance..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="saveAppSettings()">💾 Save Settings</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
