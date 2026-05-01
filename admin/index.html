@@ -71,6 +71,12 @@
         <button class="nav-item" onclick="showSection('car-models')" data-section="car-models">
           <span class="nav-icon">🚘</span> Car Models
         </button>
+        <button class="nav-item" onclick="showSection('accessories-mgr')" data-section="accessories-mgr">
+          <span class="nav-icon">🛒</span> Accessories
+        </button>
+        <button class="nav-item" onclick="showSection('account')" data-section="account">
+          <span class="nav-icon">👤</span> My Account
+        </button>
       </nav>
       <div class="sidebar-footer">
         <button class="nav-item logout" onclick="handleLogout()">
@@ -346,6 +352,100 @@
         <!-- Current Brands & Models List -->
         <h3 style="margin-top:28px;font-size:18px;font-weight:700">Current Brands & Models</h3>
         <div id="car-models-list" style="margin-top:12px"></div>
+      </section>
+
+      <!-- Accessories Manager Section -->
+      <section id="section-accessories-mgr" class="section">
+        <div class="section-header">
+          <h2>Accessories Manager</h2>
+          <p class="section-desc">Add, edit or remove accessories from the shop</p>
+        </div>
+        <div class="settings-form">
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">➕ Add New Accessory</h3>
+          <div class="form-group">
+            <label>Accessory Name</label>
+            <input type="text" id="acc-name" placeholder="e.g. LED Headlights">
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:140px">
+              <label>Category</label>
+              <select id="acc-category" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px">
+                <option value="Music System">🎵 Music System</option>
+                <option value="Lights">💡 Lights</option>
+                <option value="Seat Covers">💺 Seat Covers</option>
+                <option value="Cameras">📷 Cameras</option>
+                <option value="Sensors">📡 Sensors</option>
+                <option value="Floor Mats">🟫 Floor Mats</option>
+                <option value="Android Player">📱 Android Player</option>
+                <option value="Other Accessories">🔧 Other</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;min-width:140px">
+              <label>Emoji Icon</label>
+              <input type="text" id="acc-emoji" placeholder="e.g. 💡" value="🔧">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:120px">
+              <label>Price (₹)</label>
+              <input type="number" id="acc-price" placeholder="e.g. 3499">
+            </div>
+            <div class="form-group" style="flex:1;min-width:120px">
+              <label>Original Price (₹)</label>
+              <input type="number" id="acc-original-price" placeholder="e.g. 4999">
+            </div>
+            <div class="form-group" style="flex:1;min-width:100px">
+              <label>Rating</label>
+              <input type="number" id="acc-rating" placeholder="4.5" step="0.1" min="1" max="5" value="4.5">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Features (comma separated)</label>
+            <input type="text" id="acc-features" placeholder="e.g. Ultra Bright, Easy Install, 2 Year Warranty">
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="acc-install" checked style="width:18px;height:18px">
+            <label for="acc-install" style="margin:0;cursor:pointer">Installation at location available</label>
+          </div>
+          <button class="btn btn-primary" onclick="addAccessory()">➕ Add Accessory</button>
+        </div>
+        <h3 style="margin-top:28px;font-size:18px;font-weight:700">Current Accessories</h3>
+        <div id="accessories-mgr-list" style="margin-top:12px"></div>
+      </section>
+
+      <!-- My Account Section -->
+      <section id="section-account" class="section">
+        <div class="section-header">
+          <h2>My Account</h2>
+          <p class="section-desc">Change your admin credentials</p>
+        </div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label>Current Email</label>
+            <input type="text" id="acc-current-email" disabled>
+          </div>
+          <h3 style="font-size:16px;font-weight:700;margin:20px 0 12px">🔑 Change Password</h3>
+          <div class="form-group">
+            <label>New Password (min 6 characters)</label>
+            <input type="password" id="acc-new-password" placeholder="Enter new password">
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="acc-confirm-password" placeholder="Confirm new password">
+          </div>
+          <button class="btn btn-primary" onclick="changePassword()">🔑 Update Password</button>
+          <h3 style="font-size:16px;font-weight:700;margin:28px 0 12px">📧 Change Email</h3>
+          <div class="form-group">
+            <label>New Email Address</label>
+            <input type="email" id="acc-new-email" placeholder="Enter new email">
+          </div>
+          <div class="form-group">
+            <label>Current Password (required)</label>
+            <input type="password" id="acc-email-password" placeholder="Enter current password to confirm">
+          </div>
+          <button class="btn btn-primary" onclick="changeEmail()">📧 Update Email</button>
+          <p id="account-error" class="error-text" style="margin-top:12px"></p>
+        </div>
       </section>
 
     </main>

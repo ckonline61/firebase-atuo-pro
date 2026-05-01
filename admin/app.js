@@ -126,6 +126,8 @@ function showDashboard() {
   loadNotificationHistory();
   loadContent();
   loadCarModels();
+  loadAccessories();
+  loadAccountInfo();
 }
 
 // ===========================
@@ -672,6 +674,185 @@ async function saveCarData() {
     updateBrandDropdown();
   } catch (e) {
     showToast('Error saving: ' + e.message, true);
+  }
+}
+
+// ===========================
+// Accessories Manager
+// ===========================
+async function loadAccessories() {
+  try {
+    const snap = await db.collection('accessories').orderBy('createdAt', 'desc').get();
+    renderAccessoriesMgr(snap.docs);
+  } catch (e) {
+    renderAccessoriesMgr([]);
+  }
+}
+
+function renderAccessoriesMgr(docs) {
+  const container = document.getElementById('accessories-mgr-list');
+  if (docs.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🛒</div><p class="empty-state-text">No accessories added yet</p></div>';
+    return;
+  }
+
+  container.innerHTML = docs.map(d => {
+    const a = d.data();
+    const discount = a.originalPrice ? Math.round((1 - a.price / a.originalPrice) * 100) : 0;
+    return `<div class="listing-card" style="margin-bottom:12px">
+      <div class="listing-header">
+        <p class="listing-title">${a.image || '🔧'} ${a.name}</p>
+        <button class="btn btn-sm btn-reject" onclick="deleteAccessory('${d.id}')" title="Delete">🗑️</button>
+      </div>
+      <div class="listing-details">
+        <div class="listing-detail">Category: <span>${a.category}</span></div>
+        <div class="listing-detail">Price: <span>₹${(a.price || 0).toLocaleString()}</span></div>
+        <div class="listing-detail">MRP: <span>₹${(a.originalPrice || 0).toLocaleString()}</span></div>
+        <div class="listing-detail">Discount: <span>${discount}%</span></div>
+        <div class="listing-detail">Rating: <span>⭐ ${a.rating || 'N/A'}</span></div>
+        <div class="listing-detail">Install: <span>${a.installAtLocation ? '✅ Yes' : '❌ No'}</span></div>
+      </div>
+      ${a.features ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${a.features.map(f => `<span style="background:var(--bg);border:1px solid var(--border);padding:4px 10px;border-radius:16px;font-size:12px">${f}</span>`).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function addAccessory() {
+  const name = document.getElementById('acc-name').value.trim();
+  const category = document.getElementById('acc-category').value;
+  const emoji = document.getElementById('acc-emoji').value.trim();
+  const price = parseInt(document.getElementById('acc-price').value);
+  const originalPrice = parseInt(document.getElementById('acc-original-price').value);
+  const rating = parseFloat(document.getElementById('acc-rating').value);
+  const featuresStr = document.getElementById('acc-features').value.trim();
+  const installAtLocation = document.getElementById('acc-install').checked;
+
+  if (!name || !price) {
+    showToast('Name and price are required', true);
+    return;
+  }
+
+  const features = featuresStr ? featuresStr.split(',').map(f => f.trim()).filter(f => f) : [];
+  const discount = originalPrice ? Math.round((1 - price / originalPrice) * 100) : 0;
+
+  try {
+    await db.collection('accessories').add({
+      name,
+      category,
+      image: emoji || '🔧',
+      price,
+      originalPrice: originalPrice || price,
+      discount,
+      rating: rating || 4.5,
+      features,
+      installAtLocation,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Clear form
+    document.getElementById('acc-name').value = '';
+    document.getElementById('acc-price').value = '';
+    document.getElementById('acc-original-price').value = '';
+    document.getElementById('acc-features').value = '';
+
+    showToast(`${name} added successfully!`);
+    logActivity('🛒', `Accessory added: ${name}`);
+    loadAccessories();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+async function deleteAccessory(id) {
+  if (!confirm('Delete this accessory?')) return;
+  try {
+    await db.collection('accessories').doc(id).delete();
+    showToast('Accessory deleted');
+    logActivity('🛒', 'Accessory deleted by admin');
+    loadAccessories();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+// ===========================
+// My Account
+// ===========================
+function loadAccountInfo() {
+  const user = auth.currentUser;
+  if (user) {
+    const emailEl = document.getElementById('acc-current-email');
+    if (emailEl) emailEl.value = user.email;
+  }
+}
+
+async function changePassword() {
+  const newPass = document.getElementById('acc-new-password').value;
+  const confirmPass = document.getElementById('acc-confirm-password').value;
+  const errorEl = document.getElementById('account-error');
+  errorEl.textContent = '';
+
+  if (!newPass || !confirmPass) {
+    errorEl.textContent = 'Fill both password fields';
+    return;
+  }
+  if (newPass.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters';
+    return;
+  }
+  if (newPass !== confirmPass) {
+    errorEl.textContent = 'Passwords do not match';
+    return;
+  }
+
+  try {
+    await auth.currentUser.updatePassword(newPass);
+    document.getElementById('acc-new-password').value = '';
+    document.getElementById('acc-confirm-password').value = '';
+    showToast('Password updated successfully!');
+    logActivity('🔑', 'Admin password changed');
+  } catch (e) {
+    if (e.code === 'auth/requires-recent-login') {
+      errorEl.textContent = 'Session expired. Please logout, login again, then change password.';
+    } else {
+      errorEl.textContent = e.message;
+    }
+  }
+}
+
+async function changeEmail() {
+  const newEmail = document.getElementById('acc-new-email').value.trim();
+  const password = document.getElementById('acc-email-password').value;
+  const errorEl = document.getElementById('account-error');
+  errorEl.textContent = '';
+
+  if (!newEmail || !password) {
+    errorEl.textContent = 'Fill email and password fields';
+    return;
+  }
+
+  try {
+    // Re-authenticate first
+    const credential = firebase.auth.EmailAuthProvider.credential(auth.currentUser.email, password);
+    await auth.currentUser.reauthenticateWithCredential(credential);
+    
+    // Update email
+    await auth.currentUser.updateEmail(newEmail);
+    
+    // Update ADMIN_EMAILS if needed
+    document.getElementById('acc-current-email').value = newEmail;
+    document.getElementById('acc-new-email').value = '';
+    document.getElementById('acc-email-password').value = '';
+    showToast('Email updated to ' + newEmail);
+    logActivity('📧', `Admin email changed to ${newEmail}`);
+  } catch (e) {
+    if (e.code === 'auth/wrong-password') {
+      errorEl.textContent = 'Wrong password. Try again.';
+    } else if (e.code === 'auth/requires-recent-login') {
+      errorEl.textContent = 'Session expired. Logout and login again.';
+    } else {
+      errorEl.textContent = e.message;
+    }
   }
 }
 
