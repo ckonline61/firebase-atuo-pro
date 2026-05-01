@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import BottomNav from './components/BottomNav';
+import { App as CapApp } from '@capacitor/app';
 
 // Screens
 import SplashScreen from './screens/SplashScreen';
@@ -45,6 +47,23 @@ import TermsConditions from './screens/profile/TermsConditions';
 import Settings from './screens/profile/Settings';
 
 function App() {
+  // Handle Android hardware back button
+  useEffect(() => {
+    const handleBackButton = CapApp.addListener('backButton', ({ canGoBack }) => {
+      const path = window.location.pathname;
+      // Only exit app on main screens
+      if (!canGoBack && (path === '/home' || path === '/' || path === '/login')) {
+        CapApp.exitApp();
+      } else {
+        window.history.back();
+      }
+    });
+
+    return () => {
+      handleBackButton.then(h => h.remove());
+    };
+  }, []);
+
   return (
     <AppProvider>
       <BrowserRouter>
