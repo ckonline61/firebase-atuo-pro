@@ -16,7 +16,7 @@ export default function ProfileScreen() {
     { icon: '📍', label: 'Addresses', path: '/profile/addresses' },
     { icon: '🎁', label: 'Refer & Earn', path: '/profile/refer-earn' },
     { icon: '❓', label: 'Help & Support', path: '/profile/help-support' },
-    { icon: '⚙️', label: 'Settings', path: '#' },
+    { icon: '⚙️', label: 'Settings', path: '/profile/settings' },
   ];
 
   const handleLogout = () => {

@@ -730,3 +730,265 @@ details[open] .help-faq-question svg {
 .whatsapp-float:hover .whatsapp-float-tooltip {
   opacity: 1;
 }
+
+/* ===========================
+   Legal Pages (Privacy/Terms)
+   =========================== */
+
+.legal-content {
+  animation-fill-mode: both;
+}
+
+.legal-updated {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.legal-heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.legal-text {
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.legal-list {
+  padding-left: 20px;
+  margin-bottom: 12px;
+}
+
+.legal-list li {
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.7;
+  margin-bottom: 4px;
+}
+
+/* ===========================
+   Settings Page
+   =========================== */
+
+.settings-section {
+  margin-bottom: 28px;
+  animation-fill-mode: both;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.settings-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-item-icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+}
+
+.settings-item-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.settings-item-desc {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 1px;
+}
+
+/* Toggle Switch */
+.settings-toggle {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.settings-toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gray-300);
+  border-radius: 26px;
+  transition: 0.3s;
+}
+
+.settings-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-toggle input:checked + .settings-toggle-slider {
+  background: var(--primary-red);
+}
+
+.settings-toggle input:checked + .settings-toggle-slider::before {
+  transform: translateX(22px);
+}
+
+/* Nav Items */
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-100);
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: var(--font-family);
+  text-align: left;
+}
+
+.settings-nav-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+/* About Card */
+.settings-about-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: var(--gray-50);
+  border-radius: var(--radius-xl);
+  text-align: center;
+}
+
+.settings-about-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.settings-about-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.settings-about-version {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.settings-about-desc {
+  font-size: 12px;
+  color: var(--gray-600);
+  margin-top: 6px;
+}
+
+/* Delete Account */
+.settings-delete-btn {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  color: var(--gray-500);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-family);
+  transition: all 0.2s;
+}
+
+.settings-delete-btn:hover {
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+  background: #FFF5F5;
+}
+
+/* Delete Modal */
+.settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.settings-modal {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 32px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+}
+
+.settings-modal-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.settings-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.settings-modal-text {
+  font-size: 13px;
+  color: var(--gray-600);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.settings-modal-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.settings-modal-buttons .btn {
+  flex: 1;
+}

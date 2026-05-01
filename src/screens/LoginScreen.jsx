@@ -136,7 +136,7 @@ export default function LoginScreen() {
 
         <p className="login-terms animate-fadeIn" style={{animationDelay: '0.4s'}}>
           By continuing, you agree to our<br/>
-          <a href="#" className="text-red">Terms & Conditions</a> and <a href="#" className="text-red">Privacy Policy</a>
+          <a href="/terms-conditions" className="text-red">Terms & Conditions</a> and <a href="/privacy-policy" className="text-red">Privacy Policy</a>
         </p>
       </div>
     </div>

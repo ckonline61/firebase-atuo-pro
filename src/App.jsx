@@ -40,6 +40,9 @@ import PaymentMethods from './screens/profile/PaymentMethods';
 import Addresses from './screens/profile/Addresses';
 import ReferEarn from './screens/profile/ReferEarn';
 import HelpSupport from './screens/profile/HelpSupport';
+import PrivacyPolicy from './screens/profile/PrivacyPolicy';
+import TermsConditions from './screens/profile/TermsConditions';
+import Settings from './screens/profile/Settings';
 
 function App() {
   return (
@@ -87,6 +90,11 @@ function App() {
             <Route path="/profile/addresses" element={<Addresses />} />
             <Route path="/profile/refer-earn" element={<ReferEarn />} />
             <Route path="/profile/help-support" element={<HelpSupport />} />
+            <Route path="/profile/settings" element={<Settings />} />
+            
+            {/* Legal */}
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-conditions" element={<TermsConditions />} />
           </Routes>
           <BottomNav />
         </div>
