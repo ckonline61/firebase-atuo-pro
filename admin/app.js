@@ -54,22 +54,26 @@ async function handleLogin() {
     return;
   }
 
+  if (!ADMIN_EMAILS.includes(email)) {
+    errorEl.textContent = 'Access denied. Not an admin email.';
+    return;
+  }
+
   try {
     const result = await auth.signInWithEmailAndPassword(email, password);
-    if (!ADMIN_EMAILS.includes(result.user.email)) {
-      errorEl.textContent = 'Access denied. Not an admin account.';
-      auth.signOut();
-      return;
-    }
     showDashboard();
   } catch (error) {
-    if (error.code === 'auth/user-not-found') {
-      // Create admin account first time
+    // If user doesn't exist, create it (first time setup)
+    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
       try {
         await auth.createUserWithEmailAndPassword(email, password);
         showDashboard();
       } catch (e) {
-        errorEl.textContent = e.message;
+        if (e.code === 'auth/email-already-in-use') {
+          errorEl.textContent = 'Wrong password. Try again.';
+        } else {
+          errorEl.textContent = e.message;
+        }
       }
     } else {
       errorEl.textContent = error.message;
@@ -81,22 +85,6 @@ function handleLogout() {
   auth.signOut();
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('admin-dashboard').style.display = 'none';
-}
-
-async function handleGoogleLogin() {
-  const errorEl = document.getElementById('login-error');
-  try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    const result = await auth.signInWithPopup(provider);
-    if (!ADMIN_EMAILS.includes(result.user.email)) {
-      errorEl.textContent = 'Access denied. ' + result.user.email + ' is not an admin.';
-      auth.signOut();
-      return;
-    }
-    showDashboard();
-  } catch (e) {
-    errorEl.textContent = e.message;
-  }
 }
 
 // Check auth state
