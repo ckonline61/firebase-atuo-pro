@@ -1,61 +1,103 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { auth, googleProvider } from '../config/firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithRedirect, signInWithPopup, getRedirectResult } from 'firebase/auth';
 import './LoginScreen.css';
 
 export default function LoginScreen() {
   const navigate = useNavigate();
   const { dispatch } = useApp();
 
+  // Check redirect result on page load (for APK/mobile)
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result && result.user) {
+          const user = result.user;
+          dispatch({
+            type: 'SET_USER',
+            payload: {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              phone: user.phoneNumber || '',
+              photoURL: user.photoURL
+            }
+          });
+          navigate('/onboarding');
+        }
+      })
+      .catch((error) => {
+        console.error('Redirect result error:', error);
+      });
+  }, []);
+
   const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      dispatch({
-        type: 'SET_USER',
-        payload: {
-          uid: user.uid,
-          name: user.displayName,
-          email: user.email,
-          phone: user.phoneNumber || '',
-          photoURL: user.photoURL
-        }
-      });
-      navigate('/onboarding');
-    } catch (error) {
-      console.error('Google login error:', error);
-      // Fallback to demo mode if Firebase not configured
-      if (error.code === 'auth/configuration-not-found' || error.code === 'auth/api-key-not-valid') {
-        alert('Firebase not configured yet. Using demo mode.');
+      // Try popup first (works on desktop browsers)
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
         dispatch({
           type: 'SET_USER',
           payload: {
-            name: 'Aman Sharma',
-            email: 'aman.sharma@gmail.com',
-            phone: '+91 98765 43210',
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            phone: user.phoneNumber || '',
+            photoURL: user.photoURL
+          }
+        });
+        navigate('/onboarding');
+      } catch (popupError) {
+        // If popup blocked (APK/WebView), use redirect
+        if (
+          popupError.code === 'auth/popup-blocked' ||
+          popupError.code === 'auth/popup-closed-by-user' ||
+          popupError.code === 'auth/cancelled-popup-request' ||
+          popupError.code === 'auth/internal-error'
+        ) {
+          await signInWithRedirect(auth, googleProvider);
+        } else {
+          throw popupError;
+        }
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      // Fallback to demo mode if Firebase not configured
+      if (
+        error.code === 'auth/configuration-not-found' ||
+        error.code === 'auth/api-key-not-valid' ||
+        error.code === 'auth/unauthorized-domain'
+      ) {
+        dispatch({
+          type: 'SET_USER',
+          payload: {
+            name: 'User',
+            email: 'user@autopro.in',
+            phone: '',
             photoURL: null
           }
         });
         navigate('/onboarding');
       } else {
-        alert('Login failed: ' + error.message);
+        alert('Login failed. Please try again or skip.');
       }
     }
   };
 
-  const handlePhoneLogin = () => {
-    // Phone auth requires Blaze plan - using demo for now
+  const handleSkip = () => {
     dispatch({
       type: 'SET_USER',
       payload: {
-        name: 'User',
+        name: 'Guest User',
         email: '',
-        phone: '+91 98765 43210',
+        phone: '',
         photoURL: null
       }
     });
-    navigate('/onboarding');
+    navigate('/home');
   };
 
   return (
@@ -84,11 +126,11 @@ export default function LoginScreen() {
             <span>or</span>
           </div>
           
-          <button className="btn btn-secondary login-btn" onClick={handlePhoneLogin} id="btn-phone-login">
+          <button className="btn btn-dark login-btn" onClick={handleSkip} id="btn-skip-login">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+              <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
-            Continue with Phone Number
+            Skip
           </button>
         </div>
 
@@ -100,3 +142,4 @@ export default function LoginScreen() {
     </div>
   );
 }
+
