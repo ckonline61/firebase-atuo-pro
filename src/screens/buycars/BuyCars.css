@@ -1,0 +1,302 @@
+.car-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.car-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.car-filter-btn {
+  padding: 8px 16px;
+  border: 1.5px solid var(--gray-300);
+  border-radius: 20px;
+  background: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-600);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: var(--font-family);
+}
+
+.car-filter-btn.active {
+  background: var(--primary-red);
+  color: var(--white);
+  border-color: var(--primary-red);
+}
+
+.car-listing {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.car-list-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  background: var(--white);
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s;
+  animation-fill-mode: both;
+}
+
+.car-list-card:hover {
+  border-color: var(--gray-400);
+  box-shadow: var(--shadow-sm);
+}
+
+.car-list-image {
+  width: 100px;
+  height: 80px;
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.car-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.car-list-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.car-list-header h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.car-list-specs {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+
+.car-list-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+/* Car Details */
+.car-detail-gallery {
+  width: 100%;
+  height: 220px;
+  background: linear-gradient(135deg, var(--gray-200), var(--gray-100));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  position: relative;
+}
+
+.car-detail-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.car-detail-price-section {
+  margin: 12px 0;
+}
+
+.car-detail-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.car-detail-emi {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+.car-specs-row {
+  display: flex;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--gray-100);
+  border-bottom: 1px solid var(--gray-100);
+  margin: 12px 0;
+}
+
+.car-spec {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.car-spec-icon {
+  font-size: 14px;
+}
+
+.car-owner-info {
+  display: flex;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.car-owner-item {
+  flex: 1;
+  padding: 12px;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+}
+
+.car-owner-label {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+.car-owner-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.car-inspection-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: var(--gray-50);
+  border-radius: var(--radius-md);
+  margin: 12px 0 24px;
+}
+
+.car-inspection-text {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+.car-inspection-score {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.car-detail-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.car-detail-actions .btn {
+  flex: 1;
+}
+
+/* Sell Car */
+.sell-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 24px;
+}
+
+.sell-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sell-step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  border: 2px solid var(--gray-300);
+  color: var(--gray-400);
+}
+
+.sell-step.active .sell-step-circle {
+  background: var(--primary-red);
+  border-color: var(--primary-red);
+  color: var(--white);
+}
+
+.sell-step.completed .sell-step-circle {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--white);
+}
+
+.sell-step-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.sell-step.active .sell-step-label {
+  color: var(--primary-red);
+  font-weight: 600;
+}
+
+.sell-step-line {
+  width: 40px;
+  height: 2px;
+  background: var(--gray-300);
+  margin-bottom: 20px;
+}
+
+.sell-step-line.active {
+  background: var(--green);
+}
+
+.sell-upload {
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius-lg);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.sell-upload:hover {
+  border-color: var(--primary-red);
+}
+
+.sell-upload-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.sell-upload-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: 4px;
+}
+
+.sell-upload-hint {
+  font-size: 12px;
+  color: var(--gray-500);
+}

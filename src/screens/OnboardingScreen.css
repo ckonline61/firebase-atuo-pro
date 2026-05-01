@@ -1,0 +1,110 @@
+.onboarding-screen {
+  min-height: 100vh;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+}
+
+.onboarding-skip {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--gray-600);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 16px;
+  font-family: var(--font-family);
+}
+
+.onboarding-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  max-width: 320px;
+}
+
+.onboarding-image {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FFF5F5, #FFF0F0);
+  border-radius: 50%;
+}
+
+.onboarding-emoji {
+  font-size: 80px;
+}
+
+.onboarding-text {
+  text-align: center;
+}
+
+.onboarding-text h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.onboarding-text p {
+  font-size: 14px;
+  color: var(--gray-500);
+  line-height: 1.6;
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray-300);
+  transition: all 0.3s;
+}
+
+.onboarding-dot.active {
+  background: var(--primary-red);
+  width: 24px;
+  border-radius: 4px;
+}
+
+.onboarding-next {
+  position: absolute;
+  bottom: 40px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--primary-red);
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(229, 57, 53, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.onboarding-next:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(229, 57, 53, 0.5);
+}
+
+.onboarding-next svg {
+  width: 24px;
+  height: 24px;
+}
