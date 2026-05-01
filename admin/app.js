@@ -48,6 +48,7 @@ async function handleLogin() {
   const email = document.getElementById('admin-email').value.trim();
   const password = document.getElementById('admin-password').value;
   const errorEl = document.getElementById('login-error');
+  errorEl.textContent = '';
 
   if (!email || !password) {
     errorEl.textContent = 'Please fill all fields';
@@ -59,25 +60,44 @@ async function handleLogin() {
     return;
   }
 
+  if (password.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters';
+    return;
+  }
+
+  errorEl.textContent = 'Logging in...';
+
+  // First try to sign in
   try {
-    const result = await auth.signInWithEmailAndPassword(email, password);
+    await auth.signInWithEmailAndPassword(email, password);
     showDashboard();
-  } catch (error) {
-    // If user doesn't exist, create it (first time setup)
-    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+    return;
+  } catch (signInError) {
+    console.log('Sign in error:', signInError.code);
+    
+    // If user doesn't exist, try creating account
+    if (signInError.code === 'auth/user-not-found' || 
+        signInError.code === 'auth/invalid-credential' ||
+        signInError.code === 'auth/wrong-password') {
       try {
+        errorEl.textContent = 'Creating admin account...';
         await auth.createUserWithEmailAndPassword(email, password);
         showDashboard();
-      } catch (e) {
-        if (e.code === 'auth/email-already-in-use') {
-          errorEl.textContent = 'Wrong password. Try again.';
+        return;
+      } catch (createError) {
+        console.log('Create error:', createError.code);
+        if (createError.code === 'auth/email-already-in-use') {
+          errorEl.textContent = 'Wrong password. This email exists. Try correct password.';
+        } else if (createError.code === 'auth/weak-password') {
+          errorEl.textContent = 'Password too weak. Use at least 6 characters.';
         } else {
-          errorEl.textContent = e.message;
+          errorEl.textContent = createError.message;
         }
+        return;
       }
-    } else {
-      errorEl.textContent = error.message;
     }
+    
+    errorEl.textContent = signInError.message;
   }
 }
 
