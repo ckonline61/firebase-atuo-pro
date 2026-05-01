@@ -1,0 +1,9 @@
+{
+  "appId": "com.autopro.admin",
+  "appName": "Auto Pro Admin",
+  "webDir": "www",
+  "server": {
+    "url": "https://auto-pro-5a1ec.web.app/admin/",
+    "cleartext": true
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Auto Pro Admin</string>
+    <string name="title_activity_main">Auto Pro Admin</string>
+    <string name="package_name">com.autopro.admin</string>
+    <string name="custom_url_scheme">com.autopro.admin</string>
+</resources>
