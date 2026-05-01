@@ -83,6 +83,22 @@ function handleLogout() {
   document.getElementById('admin-dashboard').style.display = 'none';
 }
 
+async function handleGoogleLogin() {
+  const errorEl = document.getElementById('login-error');
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await auth.signInWithPopup(provider);
+    if (!ADMIN_EMAILS.includes(result.user.email)) {
+      errorEl.textContent = 'Access denied. ' + result.user.email + ' is not an admin.';
+      auth.signOut();
+      return;
+    }
+    showDashboard();
+  } catch (e) {
+    errorEl.textContent = e.message;
+  }
+}
+
 // Check auth state
 auth.onAuthStateChanged(user => {
   if (user && ADMIN_EMAILS.includes(user.email)) {
