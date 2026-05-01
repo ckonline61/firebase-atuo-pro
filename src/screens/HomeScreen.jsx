@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
+import { useContent } from '../hooks/useContent';
 import './HomeScreen.css';
 import '../screens/profile/ProfilePages.css';
 
@@ -11,6 +12,7 @@ export default function HomeScreen() {
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
   const { isEnabled } = useFeatureFlags();
+  const content = useContent();
   const [location, setLocation] = useState(state.userLocation || 'Detecting location...');
   const [loadingLocation, setLoadingLocation] = useState(false);
 
@@ -101,26 +103,26 @@ export default function HomeScreen() {
 
   const handleEmergency = (type) => {
     const messages = {
-      'jump-starter': 'Hi! I need a Jump Starter service urgently. Please help!',
-      'roadside': 'Hi! I need Road Side Assistance urgently. Please help!'
+      'jump-starter': content.emer_jump_msg,
+      'roadside': content.emer_road_msg
     };
     const message = encodeURIComponent(messages[type]);
     window.open(`https://wa.me/91${SUPPORT_NUMBER}?text=${message}`, '_blank');
   };
 
   const allServices = [
-    { id: 'inspection', featureKey: 'inspection', name: 'Book\nInspection', emoji: '🔍', color: '#FFF3E0', path: '/inspection/service' },
-    { id: 'buy', featureKey: 'buy_cars', name: 'Buy\nCar', emoji: '🚗', color: '#E3F2FD', path: '/buy-cars' },
-    { id: 'sell', featureKey: 'sell_car', name: 'Sell\nCar', emoji: '💰', color: '#E8F5E9', path: '/sell-car' },
-    { id: 'accessories', featureKey: 'accessories', name: 'Accessories', emoji: '🔧', color: '#F3E5F5', path: '/accessories' }
+    { id: 'inspection', featureKey: 'inspection', name: content.service_inspection, emoji: '🔍', color: '#FFF3E0', path: '/inspection/service' },
+    { id: 'buy', featureKey: 'buy_cars', name: content.service_buy, emoji: '🚗', color: '#E3F2FD', path: '/buy-cars' },
+    { id: 'sell', featureKey: 'sell_car', name: content.service_sell, emoji: '💰', color: '#E8F5E9', path: '/sell-car' },
+    { id: 'accessories', featureKey: 'accessories', name: content.service_accessories, emoji: '🔧', color: '#F3E5F5', path: '/accessories' }
   ];
   const services = allServices.filter(s => isEnabled(s.featureKey));
 
   const whyChoose = [
-    { icon: '✅', title: 'Verified Mechanics' },
-    { icon: '💎', title: 'Transparent Pricing' },
-    { icon: '⚡', title: 'Quick Service' },
-    { icon: '❤️', title: 'Trusted by Thousands' }
+    { icon: '✅', title: content.home_why_1 },
+    { icon: '💎', title: content.home_why_2 },
+    { icon: '⚡', title: content.home_why_3 },
+    { icon: '❤️', title: content.home_why_4 }
   ];
 
   return (
@@ -168,7 +170,7 @@ export default function HomeScreen() {
           <circle cx="11" cy="11" r="8"/>
           <path d="M21 21l-4.35-4.35"/>
         </svg>
-        <input type="text" placeholder="Search cars, services..." className="home-search-input" />
+        <input type="text" placeholder={content.home_search_placeholder} className="home-search-input" />
       </div>
 
       {/* Service Cards */}
@@ -190,7 +192,7 @@ export default function HomeScreen() {
       {/* Emergency Section */}
       {isEnabled('emergency') && (
       <div className="home-emergency-section">
-        <h3 className="home-section-title">🚨 Emergency Services</h3>
+        <h3 className="home-section-title">{content.home_emergency_title}</h3>
         <div className="emergency-grid">
           <button
             className="emergency-card jump-starter animate-fadeInUp"
@@ -199,8 +201,8 @@ export default function HomeScreen() {
             id="emergency-jump-starter"
           >
             <span className="emergency-emoji">🔋</span>
-            <span className="emergency-name">Jump Starter</span>
-            <span className="emergency-desc">Battery dead? We'll help!</span>
+            <span className="emergency-name">{content.service_jump_starter}</span>
+            <span className="emergency-desc">{content.service_jump_desc}</span>
           </button>
           <button
             className="emergency-card roadside animate-fadeInUp"
@@ -209,8 +211,8 @@ export default function HomeScreen() {
             id="emergency-roadside"
           >
             <span className="emergency-emoji">🛣️</span>
-            <span className="emergency-name">Road Side Assistance</span>
-            <span className="emergency-desc">Stuck on road? Call us!</span>
+            <span className="emergency-name">{content.service_roadside}</span>
+            <span className="emergency-desc">{content.service_roadside_desc}</span>
           </button>
         </div>
       </div>
@@ -218,7 +220,7 @@ export default function HomeScreen() {
 
       {/* Why Choose Auto Pro */}
       <div className="home-why-section">
-        <h3 className="home-section-title">Why Choose Auto Pro?</h3>
+        <h3 className="home-section-title">{content.home_why_title}</h3>
         <div className="home-why-grid">
           {whyChoose.map((item, index) => (
             <div key={index} className="home-why-item animate-fadeInUp" style={{ animationDelay: `${0.3 + index * 0.1}s` }}>
