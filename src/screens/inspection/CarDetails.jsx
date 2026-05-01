@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import { carBrands, carModels, fuelTypes, years } from '../../data/mockData';
+import { fuelTypes, years } from '../../data/mockData';
+import { useCarData } from '../../hooks/useCarData';
 import Header from '../../components/Header';
 import './Inspection.css';
 
 export default function CarDetails() {
   const navigate = useNavigate();
   const { dispatch } = useApp();
+  const { brands: carBrands, models: carModels } = useCarData();
   const [form, setForm] = useState({
     brand: '', model: '', year: '', fuelType: '', kmDriven: ''
   });

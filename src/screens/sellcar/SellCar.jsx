@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { carBrands, carModels, fuelTypes, years } from '../../data/mockData';
+import { fuelTypes, years } from '../../data/mockData';
+import { useCarData } from '../../hooks/useCarData';
 import Header from '../../components/Header';
 import '../buycars/BuyCars.css';
 
 export default function SellCar() {
   const navigate = useNavigate();
+  const { brands: carBrands, models: carModels } = useCarData();
   const [step, setStep] = useState(1);
   const [photos, setPhotos] = useState([]);
   const [form, setForm] = useState({

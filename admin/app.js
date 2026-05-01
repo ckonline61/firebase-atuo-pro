@@ -125,6 +125,7 @@ function showDashboard() {
   loadEmergencyRequests();
   loadNotificationHistory();
   loadContent();
+  loadCarModels();
 }
 
 // ===========================
@@ -549,6 +550,128 @@ async function loadAppSettings() {
     }
   } catch (e) {
     console.log('Settings not found, using defaults');
+  }
+}
+
+// ===========================
+// Car Models Manager
+// ===========================
+const defaultBrands = ['Maruti Suzuki', 'Hyundai', 'Honda', 'Toyota', 'Tata', 'Mahindra', 'Kia', 'MG', 'Volkswagen', 'Skoda', 'Ford', 'Renault', 'Nissan', 'BMW', 'Mercedes', 'Audi'];
+const defaultModels = {
+  'Maruti Suzuki': ['Swift', 'Baleno', 'Dzire', 'Brezza', 'Ertiga', 'Alto', 'WagonR', 'Celerio'],
+  'Hyundai': ['i20', 'Creta', 'Venue', 'Verna', 'i10 Grand', 'Tucson', 'Alcazar'],
+  'Honda': ['City', 'Amaze', 'WR-V', 'Jazz', 'Elevate'],
+  'Toyota': ['Innova', 'Fortuner', 'Glanza', 'Urban Cruiser', 'Camry'],
+  'Tata': ['Nexon', 'Punch', 'Harrier', 'Safari', 'Altroz', 'Tiago'],
+  'Mahindra': ['Scorpio', 'XUV700', 'Thar', 'XUV300', 'Bolero'],
+  'Kia': ['Seltos', 'Sonet', 'Carens', 'EV6'],
+  'MG': ['Hector', 'Astor', 'Gloster', 'ZS EV'],
+  'Volkswagen': ['Polo', 'Vento', 'Taigun', 'Tiguan'],
+  'Skoda': ['Rapid', 'Octavia', 'Kushaq', 'Slavia'],
+};
+
+let carBrandsData = [...defaultBrands];
+let carModelsData = JSON.parse(JSON.stringify(defaultModels));
+
+async function loadCarModels() {
+  try {
+    const doc = await db.collection('app_config').doc('car_data').get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.brands) carBrandsData = data.brands;
+      if (data.models) carModelsData = data.models;
+    }
+  } catch (e) {
+    console.log('Using default car data');
+  }
+  renderCarModels();
+  updateBrandDropdown();
+}
+
+function updateBrandDropdown() {
+  const select = document.getElementById('model-brand-select');
+  select.innerHTML = '<option value="">-- Select Brand --</option>' +
+    carBrandsData.map(b => `<option value="${b}">${b}</option>`).join('');
+}
+
+function renderCarModels() {
+  const container = document.getElementById('car-models-list');
+  container.innerHTML = carBrandsData.map(brand => {
+    const models = carModelsData[brand] || [];
+    return `<div class="listing-card" style="margin-bottom:12px">
+      <div class="listing-header">
+        <p class="listing-title">🚘 ${brand}</p>
+        <button class="btn btn-sm btn-reject" onclick="deleteBrand('${brand}')" title="Delete brand">🗑️</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+        ${models.length > 0 ? models.map(m => `
+          <span style="background:var(--bg);border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:13px;display:inline-flex;align-items:center;gap:6px">
+            ${m}
+            <button onclick="deleteModel('${brand}','${m}')" style="background:none;border:none;color:#E53935;cursor:pointer;font-size:14px;padding:0;line-height:1" title="Remove">✕</button>
+          </span>
+        `).join('') : '<span style="color:var(--text-muted);font-size:13px">No models added yet</span>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addNewBrand() {
+  const input = document.getElementById('new-brand-name');
+  const name = input.value.trim();
+  if (!name) { showToast('Enter brand name', true); return; }
+  if (carBrandsData.includes(name)) { showToast('Brand already exists', true); return; }
+
+  carBrandsData.push(name);
+  carModelsData[name] = [];
+  await saveCarData();
+  input.value = '';
+  showToast(`${name} brand added!`);
+  logActivity('🚘', `New brand added: ${name}`);
+}
+
+async function addNewModel() {
+  const brand = document.getElementById('model-brand-select').value;
+  const input = document.getElementById('new-model-name');
+  const name = input.value.trim();
+
+  if (!brand) { showToast('Select a brand first', true); return; }
+  if (!name) { showToast('Enter model name', true); return; }
+  if (!carModelsData[brand]) carModelsData[brand] = [];
+  if (carModelsData[brand].includes(name)) { showToast('Model already exists', true); return; }
+
+  carModelsData[brand].push(name);
+  await saveCarData();
+  input.value = '';
+  showToast(`${name} added to ${brand}!`);
+  logActivity('🚘', `New model added: ${brand} ${name}`);
+}
+
+async function deleteBrand(brand) {
+  if (!confirm(`Delete ${brand} and all its models?`)) return;
+  carBrandsData = carBrandsData.filter(b => b !== brand);
+  delete carModelsData[brand];
+  await saveCarData();
+  showToast(`${brand} deleted`);
+  logActivity('🚘', `Brand deleted: ${brand}`);
+}
+
+async function deleteModel(brand, model) {
+  carModelsData[brand] = (carModelsData[brand] || []).filter(m => m !== model);
+  await saveCarData();
+  showToast(`${model} removed from ${brand}`);
+}
+
+async function saveCarData() {
+  try {
+    await db.collection('app_config').doc('car_data').set({
+      brands: carBrandsData,
+      models: carModelsData,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    renderCarModels();
+    updateBrandDropdown();
+  } catch (e) {
+    showToast('Error saving: ' + e.message, true);
   }
 }
 

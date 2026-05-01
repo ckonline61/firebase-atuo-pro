@@ -68,6 +68,9 @@
         <button class="nav-item" onclick="showSection('content')" data-section="content">
           <span class="nav-icon">✏️</span> Content Editor
         </button>
+        <button class="nav-item" onclick="showSection('car-models')" data-section="car-models">
+          <span class="nav-icon">🚘</span> Car Models
+        </button>
       </nav>
       <div class="sidebar-footer">
         <button class="nav-item logout" onclick="handleLogout()">
@@ -301,6 +304,48 @@
           <button class="tab" onclick="showContentTab('login')" data-ctab="login">🔐 Login</button>
         </div>
         <div id="content-editor-form" class="settings-form" style="margin-top:16px"></div>
+      </section>
+
+      <!-- Car Models Manager Section -->
+      <section id="section-car-models" class="section">
+        <div class="section-header">
+          <h2>Car Models Manager</h2>
+          <p class="section-desc">Add or remove car brands and models from dropdown lists</p>
+        </div>
+
+        <!-- Add New Brand -->
+        <div class="settings-form">
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">➕ Add New Brand</h3>
+          <div style="display:flex;gap:10px;align-items:flex-end">
+            <div class="form-group" style="flex:1;margin-bottom:0">
+              <label>Brand Name</label>
+              <input type="text" id="new-brand-name" placeholder="e.g. Jeep, Citroen, BYD">
+            </div>
+            <button class="btn btn-primary" onclick="addNewBrand()" style="height:44px;white-space:nowrap">➕ Add Brand</button>
+          </div>
+        </div>
+
+        <!-- Add Model to Brand -->
+        <div class="settings-form" style="margin-top:20px">
+          <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">➕ Add Model to Brand</h3>
+          <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+            <div class="form-group" style="flex:1;min-width:150px;margin-bottom:0">
+              <label>Select Brand</label>
+              <select id="model-brand-select" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px">
+                <option value="">-- Select Brand --</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;min-width:150px;margin-bottom:0">
+              <label>Model Name</label>
+              <input type="text" id="new-model-name" placeholder="e.g. Compass, C3, Atto 3">
+            </div>
+            <button class="btn btn-primary" onclick="addNewModel()" style="height:44px;white-space:nowrap">➕ Add Model</button>
+          </div>
+        </div>
+
+        <!-- Current Brands & Models List -->
+        <h3 style="margin-top:28px;font-size:18px;font-weight:700">Current Brands & Models</h3>
+        <div id="car-models-list" style="margin-top:12px"></div>
       </section>
 
     </main>
