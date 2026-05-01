@@ -1,5 +1,9 @@
 {
   "appId": "com.autopro.app",
   "appName": "Auto Pro",
-  "webDir": "dist"
+  "webDir": "dist",
+  "server": {
+    "url": "https://auto-pro-5a1ec.web.app",
+    "cleartext": true
+  }
 }
