@@ -123,6 +123,8 @@ function showDashboard() {
   loadBookings();
   loadUsers();
   loadEmergencyRequests();
+  loadNotificationHistory();
+  loadContent();
 }
 
 // ===========================
@@ -548,6 +550,239 @@ async function loadAppSettings() {
   } catch (e) {
     console.log('Settings not found, using defaults');
   }
+}
+
+// ===========================
+// Push Notifications
+// ===========================
+async function sendNotification() {
+  const title = document.getElementById('notif-title').value.trim();
+  const message = document.getElementById('notif-message').value.trim();
+  const type = document.getElementById('notif-type').value;
+  const link = document.getElementById('notif-link').value.trim();
+
+  if (!title || !message) {
+    showToast('Title and message are required', true);
+    return;
+  }
+
+  try {
+    await db.collection('notifications').add({
+      title,
+      message,
+      type,
+      link: link || null,
+      read: false,
+      sentAt: firebase.firestore.FieldValue.serverTimestamp(),
+      sentBy: auth.currentUser.email
+    });
+
+    document.getElementById('notif-title').value = '';
+    document.getElementById('notif-message').value = '';
+    document.getElementById('notif-link').value = '';
+
+    showToast('Notification sent to all users!');
+    logActivity('🔔', `Notification sent: ${title}`);
+    loadNotificationHistory();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+async function loadNotificationHistory() {
+  try {
+    const snap = await db.collection('notifications').orderBy('sentAt', 'desc').limit(20).get();
+    const container = document.getElementById('notif-history');
+
+    if (snap.empty) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div><p class="empty-state-text">No notifications sent yet</p></div>';
+      return;
+    }
+
+    const typeIcons = { info: 'ℹ️', promo: '🎉', alert: '⚠️', update: '🔄' };
+
+    container.innerHTML = snap.docs.map(d => {
+      const n = d.data();
+      return `<div class="activity-item">
+        <span class="activity-icon">${typeIcons[n.type] || '🔔'}</span>
+        <div class="activity-info" style="flex:1">
+          <p class="activity-text"><strong>${n.title}</strong></p>
+          <p class="activity-time">${n.message}</p>
+          <p class="activity-time">${n.sentAt ? formatTime(n.sentAt) : 'Sending...'}</p>
+        </div>
+        <button class="btn btn-sm btn-reject" onclick="deleteNotification('${d.id}')" title="Delete">🗑️</button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    console.log('Notification history error:', e);
+  }
+}
+
+async function deleteNotification(id) {
+  try {
+    await db.collection('notifications').doc(id).delete();
+    showToast('Notification deleted');
+    loadNotificationHistory();
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+// ===========================
+// Content Editor
+// ===========================
+const contentConfig = {
+  home: {
+    title: '🏠 Home Screen',
+    fields: [
+      { key: 'home_title', label: 'App Title', default: 'Auto Pro', type: 'text' },
+      { key: 'home_subtitle', label: 'Subtitle / Tagline', default: 'Your Trusted Car Partner', type: 'text' },
+      { key: 'home_search_placeholder', label: 'Search Placeholder', default: 'Search cars, services...', type: 'text' },
+      { key: 'home_emergency_title', label: 'Emergency Section Title', default: '🚨 Emergency Services', type: 'text' },
+      { key: 'home_why_title', label: 'Why Choose Us Title', default: 'Why Choose Auto Pro?', type: 'text' },
+      { key: 'home_why_1', label: 'Feature 1', default: 'Verified Mechanics', type: 'text' },
+      { key: 'home_why_2', label: 'Feature 2', default: 'Transparent Pricing', type: 'text' },
+      { key: 'home_why_3', label: 'Feature 3', default: 'Quick Service', type: 'text' },
+      { key: 'home_why_4', label: 'Feature 4', default: 'Trusted by Thousands', type: 'text' },
+    ]
+  },
+  services: {
+    title: '🔧 Service Names',
+    fields: [
+      { key: 'service_inspection', label: 'Inspection Button', default: 'Book\nInspection', type: 'text' },
+      { key: 'service_buy', label: 'Buy Car Button', default: 'Buy\nCar', type: 'text' },
+      { key: 'service_sell', label: 'Sell Car Button', default: 'Sell\nCar', type: 'text' },
+      { key: 'service_accessories', label: 'Accessories Button', default: 'Accessories', type: 'text' },
+      { key: 'service_jump_starter', label: 'Jump Starter Name', default: 'Jump Starter', type: 'text' },
+      { key: 'service_jump_desc', label: 'Jump Starter Desc', default: "Battery dead? We'll help!", type: 'text' },
+      { key: 'service_roadside', label: 'Roadside Name', default: 'Road Side Assistance', type: 'text' },
+      { key: 'service_roadside_desc', label: 'Roadside Desc', default: 'Stuck on road? Call us!', type: 'text' },
+    ]
+  },
+  inspection: {
+    title: '🔍 Inspection Page',
+    fields: [
+      { key: 'inspect_title', label: 'Page Title', default: 'Car Inspection', type: 'text' },
+      { key: 'inspect_subtitle', label: 'Subtitle', default: 'Get your car inspected by certified mechanics', type: 'text' },
+      { key: 'inspect_basic_title', label: 'Basic Plan Name', default: 'Basic Inspection', type: 'text' },
+      { key: 'inspect_basic_price', label: 'Basic Plan Price', default: '₹499', type: 'text' },
+      { key: 'inspect_standard_title', label: 'Standard Plan Name', default: 'Standard Inspection', type: 'text' },
+      { key: 'inspect_standard_price', label: 'Standard Plan Price', default: '₹999', type: 'text' },
+      { key: 'inspect_premium_title', label: 'Premium Plan Name', default: 'Premium Inspection', type: 'text' },
+      { key: 'inspect_premium_price', label: 'Premium Plan Price', default: '₹1499', type: 'text' },
+    ]
+  },
+  buycars: {
+    title: '🚗 Buy Cars Page',
+    fields: [
+      { key: 'buy_title', label: 'Page Title', default: 'Buy Used Cars', type: 'text' },
+      { key: 'buy_subtitle', label: 'Subtitle', default: 'Find your dream car at best prices', type: 'text' },
+      { key: 'buy_filter_price', label: 'Price Filter Label', default: 'Price Range', type: 'text' },
+      { key: 'buy_filter_fuel', label: 'Fuel Filter Label', default: 'Fuel Type', type: 'text' },
+      { key: 'buy_filter_trans', label: 'Transmission Label', default: 'Transmission', type: 'text' },
+      { key: 'buy_empty', label: 'No Results Text', default: 'No cars found matching your criteria', type: 'text' },
+      { key: 'buy_contact_btn', label: 'Contact Button Text', default: 'Contact Seller', type: 'text' },
+    ]
+  },
+  sellcar: {
+    title: '💰 Sell Car Page',
+    fields: [
+      { key: 'sell_title', label: 'Page Title', default: 'Sell Your Car', type: 'text' },
+      { key: 'sell_subtitle', label: 'Subtitle', default: 'List your car and get best price', type: 'text' },
+      { key: 'sell_btn', label: 'Submit Button', default: 'Submit for Review', type: 'text' },
+      { key: 'sell_success', label: 'Success Message', default: 'Your car has been submitted for review!', type: 'text' },
+    ]
+  },
+  emergency: {
+    title: '🚨 Emergency Page',
+    fields: [
+      { key: 'emer_title', label: 'Section Title', default: 'Emergency Services', type: 'text' },
+      { key: 'emer_jump_name', label: 'Jump Starter Name', default: 'Jump Starter', type: 'text' },
+      { key: 'emer_jump_msg', label: 'Jump Starter WhatsApp Msg', default: 'Hi! I need a Jump Starter service urgently. Please help!', type: 'textarea' },
+      { key: 'emer_road_name', label: 'Roadside Name', default: 'Road Side Assistance', type: 'text' },
+      { key: 'emer_road_msg', label: 'Roadside WhatsApp Msg', default: 'Hi! I need Road Side Assistance urgently. Please help!', type: 'textarea' },
+    ]
+  },
+  login: {
+    title: '🔐 Login Page',
+    fields: [
+      { key: 'login_title', label: 'Welcome Title', default: 'Welcome to Auto Pro', type: 'text' },
+      { key: 'login_subtitle', label: 'Subtitle', default: 'Your trusted car service partner', type: 'text' },
+      { key: 'login_google_btn', label: 'Google Button Text', default: 'Continue with Google', type: 'text' },
+      { key: 'login_skip_btn', label: 'Skip Button Text', default: 'Skip for now', type: 'text' },
+      { key: 'login_terms_text', label: 'Terms Text', default: 'By continuing, you agree to our', type: 'text' },
+    ]
+  }
+};
+
+let currentContent = {};
+let currentContentTab = 'home';
+
+async function loadContent() {
+  try {
+    const doc = await db.collection('app_config').doc('content').get();
+    if (doc.exists) {
+      currentContent = doc.data();
+    }
+  } catch (e) {
+    console.log('Content not found, using defaults');
+  }
+  showContentTab(currentContentTab);
+}
+
+function showContentTab(tab) {
+  currentContentTab = tab;
+  document.querySelectorAll('#section-content .tab').forEach(t => t.classList.remove('active'));
+  const tabBtn = document.querySelector(`#section-content .tab[data-ctab="${tab}"]`);
+  if (tabBtn) tabBtn.classList.add('active');
+
+  const config = contentConfig[tab];
+  const container = document.getElementById('content-editor-form');
+
+  container.innerHTML = `
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">${config.title}</h3>
+    ${config.fields.map(f => `
+      <div class="form-group">
+        <label>${f.label}</label>
+        ${f.type === 'textarea' 
+          ? `<textarea id="content-${f.key}" rows="2" placeholder="${f.default}">${currentContent[f.key] || f.default}</textarea>`
+          : `<input type="text" id="content-${f.key}" value="${currentContent[f.key] || f.default}" placeholder="${f.default}">`
+        }
+      </div>
+    `).join('')}
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="saveContent()">💾 Save Content</button>
+      <button class="btn btn-outline" onclick="resetContent('${tab}')">↩️ Reset to Default</button>
+    </div>
+  `;
+}
+
+async function saveContent() {
+  try {
+    const config = contentConfig[currentContentTab];
+    config.fields.forEach(f => {
+      const el = document.getElementById(`content-${f.key}`);
+      if (el) currentContent[f.key] = el.value;
+    });
+
+    await db.collection('app_config').doc('content').set(currentContent);
+    showToast('Content saved! Changes will reflect in customer app.');
+    logActivity('✏️', `Content updated: ${contentConfig[currentContentTab].title}`);
+  } catch (e) {
+    showToast('Error: ' + e.message, true);
+  }
+}
+
+function resetContent(tab) {
+  const config = contentConfig[tab];
+  config.fields.forEach(f => {
+    const el = document.getElementById(`content-${f.key}`);
+    if (el) {
+      el.value = f.default;
+      delete currentContent[f.key];
+    }
+  });
+  showToast('Reset to defaults. Click Save to apply.');
 }
 
 // ===========================

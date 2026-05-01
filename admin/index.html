@@ -62,6 +62,12 @@
         <button class="nav-item" onclick="showSection('settings')" data-section="settings">
           <span class="nav-icon">⚙️</span> App Settings
         </button>
+        <button class="nav-item" onclick="showSection('notifications')" data-section="notifications">
+          <span class="nav-icon">🔔</span> Notifications
+        </button>
+        <button class="nav-item" onclick="showSection('content')" data-section="content">
+          <span class="nav-icon">✏️</span> Content Editor
+        </button>
       </nav>
       <div class="sidebar-footer">
         <button class="nav-item logout" onclick="handleLogout()">
@@ -243,6 +249,58 @@
           </div>
           <button class="btn btn-primary" onclick="saveAppSettings()">💾 Save Settings</button>
         </div>
+      </section>
+
+      <!-- Notifications Section -->
+      <section id="section-notifications" class="section">
+        <div class="section-header">
+          <h2>Push Notifications</h2>
+          <p class="section-desc">Send notifications to all app users</p>
+        </div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label>Notification Title</label>
+            <input type="text" id="notif-title" placeholder="e.g. Special Offer!">
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="notif-message" rows="3" placeholder="e.g. Get 20% off on your first inspection!"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="notif-type">
+              <option value="info">ℹ️ Info</option>
+              <option value="promo">🎉 Promotion</option>
+              <option value="alert">⚠️ Alert</option>
+              <option value="update">🔄 App Update</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Link (optional)</label>
+            <input type="text" id="notif-link" placeholder="e.g. /buy-cars or /accessories">
+          </div>
+          <button class="btn btn-primary" onclick="sendNotification()">📤 Send Notification</button>
+        </div>
+        <h3 style="margin-top:32px;font-size:18px;font-weight:700">Sent Notifications</h3>
+        <div id="notif-history" class="activity-list" style="margin-top:12px"></div>
+      </section>
+
+      <!-- Content Editor Section -->
+      <section id="section-content" class="section">
+        <div class="section-header">
+          <h2>Content Editor</h2>
+          <p class="section-desc">Edit all text in the customer app without updating the app</p>
+        </div>
+        <div class="tab-bar">
+          <button class="tab active" onclick="showContentTab('home')" data-ctab="home">🏠 Home</button>
+          <button class="tab" onclick="showContentTab('services')" data-ctab="services">🔧 Services</button>
+          <button class="tab" onclick="showContentTab('inspection')" data-ctab="inspection">🔍 Inspection</button>
+          <button class="tab" onclick="showContentTab('buycars')" data-ctab="buycars">🚗 Buy Cars</button>
+          <button class="tab" onclick="showContentTab('sellcar')" data-ctab="sellcar">💰 Sell Car</button>
+          <button class="tab" onclick="showContentTab('emergency')" data-ctab="emergency">🚨 Emergency</button>
+          <button class="tab" onclick="showContentTab('login')" data-ctab="login">🔐 Login</button>
+        </div>
+        <div id="content-editor-form" class="settings-form" style="margin-top:16px"></div>
       </section>
 
     </main>
