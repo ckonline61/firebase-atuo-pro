@@ -4,12 +4,12 @@
 
 // Firebase Config (same project as customer app)
 const firebaseConfig = {
-  apiKey: "AIzaSyBxYml8AYKB3MBc1ESJn3teyGUb2M0BYLs",
+  apiKey: "AIzaSyDFwqovevqq4aXIBZ3vi-IK-RO0YRmzRr4",
   authDomain: "auto-pro-5a1ec.firebaseapp.com",
   projectId: "auto-pro-5a1ec",
   storageBucket: "auto-pro-5a1ec.firebasestorage.app",
-  messagingSenderId: "1098578275075",
-  appId: "1:1098578275075:web:ec81bbafb23d0a52dbf4f0"
+  messagingSenderId: "652783899103",
+  appId: "1:652783899103:web:aed46f9d6c08245ce6f46a"
 };
 
 // Initialize Firebase
