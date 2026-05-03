@@ -22,6 +22,7 @@ const db = firebase.firestore();
 // ===========================
 const defaultFeatures = [
   { id: 'inspection', name: 'Car Inspection', icon: '🔍', desc: 'Book car inspection service', enabled: true },
+  { id: 'car_ac_service', name: 'Car AC Services', icon: 'AC', desc: 'AC checkup, gas refill and cooling service', enabled: true },
   { id: 'buy_cars', name: 'Buy Cars', icon: '🚗', desc: 'Browse and buy used cars', enabled: true },
   { id: 'sell_car', name: 'Sell Car', icon: '💰', desc: 'List car for sale', enabled: true },
   { id: 'accessories', name: 'Accessories Shop', icon: '🛒', desc: 'Buy car accessories', enabled: true },

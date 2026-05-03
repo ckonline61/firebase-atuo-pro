@@ -17,6 +17,7 @@ const defaultContent = {
 
   // Services
   service_inspection: 'Book\nInspection',
+  service_ac: 'Car AC\nService',
   service_buy: 'Buy\nCar',
   service_sell: 'Sell\nCar',
   service_accessories: 'Accessories',

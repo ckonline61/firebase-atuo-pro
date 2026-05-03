@@ -21,6 +21,7 @@ import PaymentScreen from './screens/inspection/PaymentScreen';
 import BookingConfirmed from './screens/inspection/BookingConfirmed';
 import InspectionCompleted from './screens/inspection/InspectionCompleted';
 import InspectionReport from './screens/inspection/InspectionReport';
+import CarAcServices from './screens/ac/CarAcServices';
 
 // Bookings
 import MyBookings from './screens/bookings/MyBookings';
@@ -109,6 +110,7 @@ function AppRoutes() {
           
           {/* Inspection */}
           <Route path="/inspection/service" element={<SelectService />} />
+          <Route path="/ac-services" element={<CarAcServices />} />
           <Route path="/inspection/car-details" element={<CarDetails />} />
           <Route path="/inspection/pickup" element={<PickupDetails />} />
           <Route path="/inspection/confirm" element={<ConfirmBooking />} />

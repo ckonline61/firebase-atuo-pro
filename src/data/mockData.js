@@ -31,6 +31,37 @@ export const inspectionServices = [
   }
 ];
 
+export const carAcServices = [
+  {
+    id: 'ac-basic-checkup',
+    name: 'AC Basic Checkup',
+    description: 'Cooling test, vent temperature check and leak inspection',
+    icon: 'AC',
+    price: 499
+  },
+  {
+    id: 'ac-gas-refill',
+    name: 'AC Gas Refill',
+    description: 'AC gas top-up with cooling performance check',
+    icon: 'GAS',
+    price: 1499
+  },
+  {
+    id: 'ac-full-service',
+    name: 'AC Full Service',
+    description: 'Cooling coil cleaning, filter check, gas and full diagnosis',
+    icon: 'COOL',
+    price: 2499
+  },
+  {
+    id: 'ac-compressor-check',
+    name: 'Compressor Check',
+    description: 'Compressor, belt, relay and electrical diagnosis',
+    icon: 'COMP',
+    price: 899
+  }
+];
+
 export const carBrands = [
   'Maruti Suzuki', 'Hyundai', 'Honda', 'Toyota', 'Tata', 'Mahindra',
   'Kia', 'MG', 'Volkswagen', 'Skoda', 'Ford', 'Renault', 'Nissan', 'BMW',

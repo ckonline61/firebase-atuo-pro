@@ -5,6 +5,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 // Default features (all enabled) - used if Firestore is unavailable
 const defaultFeatures = {
   inspection: true,
+  car_ac_service: true,
   buy_cars: true,
   sell_car: true,
   accessories: true,

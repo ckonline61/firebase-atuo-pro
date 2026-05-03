@@ -112,6 +112,7 @@ export default function HomeScreen() {
 
   const allServices = [
     { id: 'inspection', featureKey: 'inspection', name: content.service_inspection, emoji: '🔍', color: '#FFF3E0', path: '/inspection/service' },
+    { id: 'ac-service', featureKey: 'car_ac_service', name: content.service_ac, emoji: 'AC', color: '#E0F7FA', path: '/ac-services' },
     { id: 'buy', featureKey: 'buy_cars', name: content.service_buy, emoji: '🚗', color: '#E3F2FD', path: '/buy-cars' },
     { id: 'sell', featureKey: 'sell_car', name: content.service_sell, emoji: '💰', color: '#E8F5E9', path: '/sell-car' },
     { id: 'accessories', featureKey: 'accessories', name: content.service_accessories, emoji: '🔧', color: '#F3E5F5', path: '/accessories' }

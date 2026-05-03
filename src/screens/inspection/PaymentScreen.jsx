@@ -15,11 +15,46 @@ export default function PaymentScreen() {
   const price = state.currentBooking.service?.price || 999;
 
   const paymentOptions = [
-    { id: 'upi', name: 'UPI', desc: 'Pay using any UPI App', icon: 'UPI' },
-    { id: 'card', name: 'Card', desc: 'Debit / Credit Card', icon: 'CARD' },
-    { id: 'netbanking', name: 'Net Banking', desc: 'All Major Banks', icon: 'BANK' },
-    { id: 'pay_on_spot', name: 'Pay on Spot', desc: 'Pay after service (Cash/UPI)', icon: 'CASH' },
+    { id: 'upi', name: 'UPI', desc: 'Pay using any UPI App' },
+    { id: 'card', name: 'Card', desc: 'Debit / Credit Card' },
+    { id: 'netbanking', name: 'Net Banking', desc: 'All Major Banks' },
+    { id: 'pay_on_spot', name: 'Pay on Spot', desc: 'Pay after service (Cash/UPI)' },
   ];
+
+  const renderPaymentIcon = (id) => {
+    if (id === 'upi') {
+      return <span className="payment-icon-label">UPI</span>;
+    }
+
+    if (id === 'card') {
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="5" width="18" height="14" rx="2"/>
+          <path d="M3 10h18"/>
+          <path d="M7 15h3"/>
+        </svg>
+      );
+    }
+
+    if (id === 'netbanking') {
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 10h18"/>
+          <path d="M5 10l7-5 7 5"/>
+          <path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>
+          <path d="M4 18h16"/>
+        </svg>
+      );
+    }
+
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="6" width="18" height="12" rx="2"/>
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M6 9v.01M18 15v.01"/>
+      </svg>
+    );
+  };
 
   const generateBookingId = () => 'AP' + Date.now().toString().slice(-10);
 
@@ -187,7 +222,7 @@ export default function PaymentScreen() {
               onClick={() => setSelectedPayment(option.id)}
               id={`payment-${option.id}`}
             >
-              <div className="payment-option-icon">{option.icon}</div>
+              <div className="payment-option-icon">{renderPaymentIcon(option.id)}</div>
               <div className="payment-option-info">
                 <h4>{option.name}</h4>
                 <p>{option.desc}</p>
