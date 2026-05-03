@@ -58,6 +58,19 @@
   gap: 12px;
 }
 
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.google-login-message {
+  margin: -4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--gray-600);
+}
+
 .login-divider {
   display: flex;
   align-items: center;
