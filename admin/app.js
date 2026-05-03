@@ -351,6 +351,7 @@ async function loadBookings(filter = 'all') {
     const snap = await db.collection('bookings').orderBy('createdAt', 'desc').get();
     renderBookingsTable(snap.docs, filter);
   } catch (e) {
+    console.log('Bookings load error:', e.message);
     renderBookingsTable([], filter);
   }
 }
@@ -381,24 +382,28 @@ function renderBookingsTable(docs, filter) {
           <th>Service</th>
           <th>Car</th>
           <th>Customer</th>
-          <th>Date</th>
+          <th>Phone</th>
+          <th>Service Date</th>
+          <th>Booked At</th>
           <th>Amount</th>
           <th>Status</th>
-          <th>Action</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         ${items.map(b => `
           <tr>
-            <td>${b.id.slice(0, 8)}...</td>
-            <td>${b.service || 'Inspection'}</td>
-            <td>${b.car || 'N/A'}</td>
-            <td>${b.customerName || 'N/A'}</td>
-            <td>${b.date || 'N/A'}</td>
-            <td>₹${(b.price || 0).toLocaleString()}</td>
+            <td>${esc(b.id.slice(0, 8))}...</td>
+            <td>${esc(b.service || 'Inspection')}</td>
+            <td>${esc(b.car || 'N/A')}</td>
+            <td>${esc(b.customerName || 'N/A')}</td>
+            <td>${esc(b.customerPhone || b.phone || 'N/A')}</td>
+            <td>${esc(b.date || 'N/A')}</td>
+            <td>${b.createdAt ? esc(formatTime(b.createdAt)) : 'N/A'}</td>
+            <td>₹${esc((b.price || 0).toLocaleString())}</td>
             <td><span class="status-badge badge-${b.status === 'completed' ? 'approved' : b.status === 'confirmed' ? 'approved' : 'pending'}">${b.status || 'pending'}</span></td>
             <td>
-              <select onchange="updateBookingStatus('${b.id}', this.value)" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:6px;border-radius:6px;font-size:12px">
+              <select onchange="updateBookingStatus('${esc(b.id)}', this.value)" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:6px;border-radius:6px;font-size:12px">
                 <option value="pending" ${b.status === 'pending' ? 'selected' : ''}>Pending</option>
                 <option value="confirmed" ${b.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
                 <option value="mechanic_assigned" ${b.status === 'mechanic_assigned' ? 'selected' : ''}>Mechanic Assigned</option>
@@ -406,11 +411,16 @@ function renderBookingsTable(docs, filter) {
                 <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>Completed</option>
                 <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
               </select>
+              <button class="btn btn-sm btn-primary" onclick="openBookingReport('${esc(b.id)}')" style="margin-left:6px;margin-top:6px">Report</button>
             </td>
           </tr>
         `).join('')}
       </tbody>
     </table>`;
+}
+
+function openBookingReport(id) {
+  window.open(`/inspection/report/${encodeURIComponent(id)}`, '_blank');
 }
 
 async function updateBookingStatus(id, status) {
@@ -1103,6 +1113,15 @@ function formatTime(timestamp) {
   if (!timestamp) return 'N/A';
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function esc(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 async function logActivity(icon, message) {
