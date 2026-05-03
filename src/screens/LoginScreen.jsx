@@ -10,6 +10,7 @@ import {
   signInWithRedirect,
   updateProfile
 } from 'firebase/auth';
+import { saveUserProfile } from '../services/userProfile';
 import './LoginScreen.css';
 
 export default function LoginScreen() {
@@ -26,20 +27,9 @@ export default function LoginScreen() {
   // Check redirect result on page load (for APK/mobile)
   useEffect(() => {
     getRedirectResult(auth)
-      .then((result) => {
+      .then(async (result) => {
         if (result && result.user) {
-          const user = result.user;
-          dispatch({
-            type: 'SET_USER',
-            payload: {
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
-              phone: user.phoneNumber || '',
-              photoURL: user.photoURL
-            }
-          });
-          navigate('/onboarding');
+          await setLoggedInUser(result.user);
         }
       })
       .catch((error) => {
@@ -47,16 +37,30 @@ export default function LoginScreen() {
       });
   }, []);
 
-  const setLoggedInUser = (user, fallbackName = 'Auto Pro User') => {
+  const setLoggedInUser = async (user, fallbackName = 'Auto Pro User') => {
+    const userProfile = {
+      uid: user.uid,
+      name: user.displayName || fallbackName,
+      email: user.email || '',
+      phone: user.phoneNumber || '',
+      photoURL: user.photoURL || null
+    };
+
+    try {
+      const savedProfile = await saveUserProfile(user, userProfile);
+      if (savedProfile) {
+        userProfile.name = savedProfile.name;
+        userProfile.email = savedProfile.email;
+        userProfile.phone = savedProfile.phone;
+        userProfile.photoURL = savedProfile.photoURL;
+      }
+    } catch (error) {
+      console.error('User profile save error:', error);
+    }
+
     dispatch({
       type: 'SET_USER',
-      payload: {
-        uid: user.uid,
-        name: user.displayName || fallbackName,
-        email: user.email || '',
-        phone: user.phoneNumber || '',
-        photoURL: user.photoURL || null
-      }
+      payload: userProfile
     });
     navigate('/onboarding');
   };
@@ -154,10 +158,10 @@ export default function LoginScreen() {
       if (pendingPhoneUser && pendingPhoneUser.displayName !== name) {
         await updateProfile(pendingPhoneUser, { displayName: name });
       }
-      setLoggedInUser(pendingPhoneUser, name);
+      await setLoggedInUser(pendingPhoneUser, name);
     } catch (error) {
       console.error('Name update error:', error);
-      setLoggedInUser(pendingPhoneUser, name);
+      await setLoggedInUser(pendingPhoneUser, name);
     } finally {
       setOtpLoading(false);
     }
@@ -168,18 +172,7 @@ export default function LoginScreen() {
       // Try popup first (works on desktop browsers)
       try {
         const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-        dispatch({
-          type: 'SET_USER',
-          payload: {
-            uid: user.uid,
-            name: user.displayName,
-            email: user.email,
-            phone: user.phoneNumber || '',
-            photoURL: user.photoURL
-          }
-        });
-        navigate('/onboarding');
+        await setLoggedInUser(result.user);
       } catch (popupError) {
         // If popup blocked (APK/WebView), use redirect
         if (

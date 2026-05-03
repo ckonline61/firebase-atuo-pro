@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from 'firebase/auth';
 import { useApp } from '../../context/AppContext';
 import { auth } from '../../config/firebase';
+import { saveUserProfile } from '../../services/userProfile';
 import Header from '../../components/Header';
 import './Inspection.css';
 
@@ -101,15 +102,23 @@ export default function ConfirmBooking() {
         await updateProfile(result.user, { displayName: name });
       }
 
+      const userProfile = {
+        uid: result.user.uid,
+        name,
+        email: result.user.email || '',
+        phone: result.user.phoneNumber || formatIndianPhone(phone),
+        photoURL: result.user.photoURL || null
+      };
+
+      try {
+        await saveUserProfile(result.user, userProfile);
+      } catch (error) {
+        console.error('Booking user profile save error:', error);
+      }
+
       dispatch({
         type: 'SET_USER',
-        payload: {
-          uid: result.user.uid,
-          name,
-          email: result.user.email || '',
-          phone: result.user.phoneNumber || formatIndianPhone(phone),
-          photoURL: result.user.photoURL || null
-        }
+        payload: userProfile
       });
       navigate('/inspection/payment');
     } catch (error) {

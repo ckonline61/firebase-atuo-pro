@@ -8,7 +8,14 @@ import './Profile.css';
 export default function ProfileScreen() {
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
-  const user = state.user || { name: 'Aman Sharma', email: 'aman.sharma@gmail.com' };
+  const firebaseUser = auth.currentUser;
+  const user = state.user || {
+    name: firebaseUser?.displayName || 'Guest User',
+    email: firebaseUser?.email || '',
+    phone: firebaseUser?.phoneNumber || '',
+    photoURL: firebaseUser?.photoURL || null
+  };
+  const contactText = user.phone || user.email || 'Mobile number not added';
 
   const menuItems = [
     { icon: '📋', label: 'My Bookings', path: '/bookings' },
@@ -46,6 +53,7 @@ export default function ProfileScreen() {
           </div>
           <div className="profile-info">
             <h3 className="profile-name">{user.name}</h3>
+            <p className="profile-contact">{contactText}</p>
             <p className="profile-edit">View Profile</p>
           </div>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" strokeWidth="2">

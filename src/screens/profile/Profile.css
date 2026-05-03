@@ -42,6 +42,12 @@
   color: var(--white);
 }
 
+.profile-contact {
+  font-size: 12px;
+  color: rgba(255,255,255,0.86);
+  margin-top: 2px;
+}
+
 .profile-edit {
   font-size: 12px;
   color: rgba(255,255,255,0.7);
