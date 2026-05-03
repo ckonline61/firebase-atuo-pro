@@ -121,6 +121,7 @@ function showDashboard() {
   loadFeatureToggles();
   loadCarListings();
   loadBookings();
+  loadReports();
   loadUsers();
   loadEmergencyRequests();
   loadNotificationHistory();
@@ -539,6 +540,7 @@ async function saveBookingReport(id) {
     logActivity('📋', `Inspection report saved for booking ${id.slice(0, 8)}`);
     closeReportEditor();
     loadBookings();
+    loadReports();
   } catch (e) {
     showToast('Error saving report: ' + e.message, true);
   }
@@ -552,6 +554,64 @@ async function updateBookingStatus(id, status) {
   } catch (e) {
     showToast('Error: ' + e.message, true);
   }
+}
+
+// ===========================
+// Reports
+// ===========================
+async function loadReports() {
+  const container = document.getElementById('reports-list');
+  if (!container) return;
+
+  try {
+    const snap = await db.collection('bookings').orderBy('createdAt', 'desc').get();
+    renderReports(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  } catch (e) {
+    console.log('Reports load error:', e.message);
+    renderReports([]);
+  }
+}
+
+function renderReports(bookings) {
+  const container = document.getElementById('reports-list');
+  if (!container) return;
+
+  if (bookings.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📄</div><p class="empty-state-text">No bookings available for reports</p></div>`;
+    return;
+  }
+
+  container.innerHTML = bookings.map((booking) => {
+    const hasReport = Boolean(booking.inspectionReport);
+    const score = booking.inspectionReport?.overallScore || 'Pending';
+    const condition = booking.inspectionReport?.condition || 'Report not created';
+
+    return `
+      <div class="report-admin-card">
+        <div class="report-admin-top">
+          <div>
+            <p class="report-admin-id">${esc(booking.id)}</p>
+            <h3>${esc(booking.customerName || 'Customer')}</h3>
+            <p>${esc(booking.car || 'Car details not added')}</p>
+          </div>
+          <span class="status-badge badge-${hasReport ? 'approved' : 'pending'}">${hasReport ? 'Ready' : 'Pending'}</span>
+        </div>
+        <div class="report-admin-meta">
+          <span>Phone: ${esc(booking.customerPhone || 'N/A')}</span>
+          <span>Service: ${esc(booking.date || 'N/A')}</span>
+          <span>Booked: ${booking.createdAt ? esc(formatTime(booking.createdAt)) : 'N/A'}</span>
+        </div>
+        <div class="report-admin-score">
+          <strong>${esc(score)}</strong>
+          <span>${esc(condition)}</span>
+        </div>
+        <div class="report-admin-actions">
+          <button class="btn btn-primary" onclick="openBookingReportEditor('${esc(booking.id)}')">${hasReport ? 'Edit Report' : 'Create Report'}</button>
+          <button class="btn btn-secondary" onclick="window.open('/inspection/report/${encodeURIComponent(booking.id)}', '_blank')">View</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ===========================

@@ -946,6 +946,76 @@ body {
   margin-top: 20px;
 }
 
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.report-admin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.report-admin-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.report-admin-id {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.report-admin-top h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.report-admin-top p,
+.report-admin-meta span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.report-admin-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.report-admin-score {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.report-admin-score strong {
+  font-size: 28px;
+  color: var(--green);
+}
+
+.report-admin-score span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.report-admin-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* ===========================
    Empty State
    =========================== */
