@@ -412,12 +412,136 @@ function renderBookingsTable(docs, filter) {
                 <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>Completed</option>
                 <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
               </select>
+              <button class="btn btn-sm btn-secondary" onclick="openTrackingEditor('${esc(b.id)}')" style="margin-left:6px;margin-top:6px">Update Tracking</button>
               <button class="btn btn-sm btn-primary" onclick="openBookingReportEditor('${esc(b.id)}')" style="margin-left:6px;margin-top:6px">${b.inspectionReport ? 'Edit Report' : 'Create Report'}</button>
             </td>
           </tr>
         `).join('')}
       </tbody>
     </table>`;
+}
+
+async function openTrackingEditor(id) {
+  try {
+    const snap = await db.collection('bookings').doc(id).get();
+    if (!snap.exists) {
+      showToast('Booking not found', true);
+      return;
+    }
+    renderTrackingEditor({ id: snap.id, ...snap.data() });
+  } catch (e) {
+    showToast('Error loading tracking: ' + e.message, true);
+  }
+}
+
+function renderTrackingEditor(booking) {
+  document.getElementById('tracking-editor-modal')?.remove();
+
+  const updates = booking.trackingUpdates || [];
+  const modal = document.createElement('div');
+  modal.id = 'tracking-editor-modal';
+  modal.className = 'admin-modal-overlay';
+  modal.innerHTML = `
+    <div class="admin-modal tracking-editor">
+      <div class="report-editor-header">
+        <div>
+          <h3>Update Tracking</h3>
+          <p>${esc(booking.customerName || 'Customer')} - ${esc(booking.id)}</p>
+        </div>
+        <button class="admin-modal-close" onclick="closeTrackingEditor()">x</button>
+      </div>
+
+      <div class="tracking-admin-grid">
+        <div class="form-group">
+          <label>Mechanic Name</label>
+          <input id="tracking-mechanic-name" value="${esc(booking.mechanicName || '')}" placeholder="Mechanic name">
+        </div>
+        <div class="form-group">
+          <label>Mechanic Phone</label>
+          <input id="tracking-mechanic-phone" value="${esc(booking.mechanicPhone || '')}" placeholder="Mechanic phone">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Mechanic Vehicle</label>
+        <input id="tracking-mechanic-vehicle" value="${esc(booking.mechanicVehicle || '')}" placeholder="Vehicle details">
+      </div>
+
+      <div class="form-group">
+        <label>Status Title</label>
+        <input id="tracking-status-title" value="${esc(booking.currentTrackingStatus || '')}" placeholder="Example: Mechanic assigned">
+      </div>
+
+      <div class="form-group">
+        <label>Status Note</label>
+        <textarea id="tracking-status-note" rows="3" placeholder="Write customer-facing update">${esc(booking.currentTrackingNote || '')}</textarea>
+      </div>
+
+      <div class="tracking-existing-updates">
+        <h4>Previous Updates</h4>
+        ${updates.length ? updates.map(update => `
+          <div class="tracking-existing-item">
+            <strong>${esc(update.title)}</strong>
+            <p>${esc(update.note || '')}</p>
+            <span>${esc(update.time || '')}</span>
+          </div>
+        `).join('') : '<p class="empty-state-text">No updates yet</p>'}
+      </div>
+
+      <div class="report-editor-actions">
+        <button class="btn btn-secondary" onclick="closeTrackingEditor()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTrackingUpdate('${esc(booking.id)}')">Save Update</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function closeTrackingEditor() {
+  document.getElementById('tracking-editor-modal')?.remove();
+}
+
+async function saveTrackingUpdate(id) {
+  const mechanicName = document.getElementById('tracking-mechanic-name').value.trim();
+  const mechanicPhone = document.getElementById('tracking-mechanic-phone').value.trim();
+  const mechanicVehicle = document.getElementById('tracking-mechanic-vehicle').value.trim();
+  const title = document.getElementById('tracking-status-title').value.trim();
+  const note = document.getElementById('tracking-status-note').value.trim();
+
+  if (!title) {
+    showToast('Enter status title', true);
+    return;
+  }
+
+  try {
+    const ref = db.collection('bookings').doc(id);
+    const snap = await ref.get();
+    const previous = snap.exists ? (snap.data().trackingUpdates || []) : [];
+    const update = {
+      title,
+      note,
+      time: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+    };
+
+    await ref.update({
+      mechanicName,
+      mechanicPhone,
+      mechanicVehicle,
+      currentTrackingStatus: title,
+      currentTrackingNote: note,
+      trackingUpdates: [...previous, update],
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    showToast('Tracking update saved');
+    logActivity('📍', `Tracking updated for booking ${id.slice(0, 8)}`);
+    closeTrackingEditor();
+    loadBookings();
+    loadReports();
+  } catch (e) {
+    showToast('Error saving tracking: ' + e.message, true);
+  }
 }
 
 const defaultInspectionReport = {

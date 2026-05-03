@@ -1016,6 +1016,50 @@ body {
   flex-wrap: wrap;
 }
 
+.tracking-admin-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tracking-existing-updates {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 14px;
+}
+
+.tracking-existing-updates h4 {
+  margin: 0 0 10px;
+}
+
+.tracking-existing-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tracking-existing-item strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.tracking-existing-item p {
+  margin: 0 0 4px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.tracking-existing-item span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .tracking-admin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ===========================
    Empty State
    =========================== */
