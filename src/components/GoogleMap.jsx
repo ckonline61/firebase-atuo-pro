@@ -32,13 +32,16 @@ function loadGoogleMapsScript(apiKey) {
 }
 
 export default function GoogleMap({ 
-  center = { lat: 28.6328, lng: 77.2197 }, // Default: Connaught Place, Delhi
+  center = { lat: 21.2514, lng: 81.6296 }, // Default: Raipur, Chhattisgarh
   zoom = 14,
   markers = [],
   height = '200px',
   onLocationSelect = null,
   showSearch = false,
   showUserLocation = false,
+  searchBounds = null,
+  strictSearchBounds = false,
+  searchPlaceholder = 'Search location...',
   style = {}
 }) {
   const mapRef = useRef(null);
@@ -158,9 +161,19 @@ export default function GoogleMap({
     if (showSearch) {
       const input = document.getElementById('map-search-input');
       if (input) {
-        const autocomplete = new window.google.maps.places.Autocomplete(input, {
+        const autocompleteOptions = {
           componentRestrictions: { country: 'in' }
-        });
+        };
+
+        if (searchBounds) {
+          autocompleteOptions.bounds = new window.google.maps.LatLngBounds(
+            { lat: searchBounds.south, lng: searchBounds.west },
+            { lat: searchBounds.north, lng: searchBounds.east }
+          );
+          autocompleteOptions.strictBounds = strictSearchBounds;
+        }
+
+        const autocomplete = new window.google.maps.places.Autocomplete(input, autocompleteOptions);
         autocomplete.bindTo('bounds', map);
         autocomplete.addListener('place_changed', () => {
           const place = autocomplete.getPlace();
@@ -203,7 +216,7 @@ export default function GoogleMap({
         <input
           id="map-search-input"
           type="text"
-          placeholder="Search location..."
+          placeholder={searchPlaceholder}
           style={{
             width: '100%',
             padding: '10px 14px',

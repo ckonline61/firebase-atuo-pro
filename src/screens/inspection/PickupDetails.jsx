@@ -6,11 +6,31 @@ import Header from '../../components/Header';
 import GoogleMap from '../../components/GoogleMap';
 import './Inspection.css';
 
+const RAIPUR_CENTER = { lat: 21.2514, lng: 81.6296 };
+const RAIPUR_BOUNDS = {
+  north: 21.43,
+  south: 21.08,
+  east: 81.82,
+  west: 81.45
+};
+const DEFAULT_RAIPUR_LOCATION = 'Raipur, Chhattisgarh';
+const SERVICE_UNAVAILABLE_MESSAGE = 'Service not available in your area. We currently serve Raipur, Chhattisgarh only.';
+
+function isWithinRaipur({ lat, lng }) {
+  return (
+    lat >= RAIPUR_BOUNDS.south &&
+    lat <= RAIPUR_BOUNDS.north &&
+    lng >= RAIPUR_BOUNDS.west &&
+    lng <= RAIPUR_BOUNDS.east
+  );
+}
+
 export default function PickupDetails() {
   const navigate = useNavigate();
   const { dispatch } = useApp();
-  const [location, setLocation] = useState('Connaught Place, Delhi');
-  const [mapCenter, setMapCenter] = useState({ lat: 28.6328, lng: 77.2197 });
+  const [location, setLocation] = useState(DEFAULT_RAIPUR_LOCATION);
+  const [mapCenter, setMapCenter] = useState(RAIPUR_CENTER);
+  const [locationError, setLocationError] = useState('');
 
   // Tomorrow as default date (YYYY-MM-DD format for input)
   const tomorrow = new Date();
@@ -37,15 +57,21 @@ export default function PickupDetails() {
   const handleLocationSelect = (loc) => {
     setLocation(loc.address);
     setMapCenter({ lat: loc.lat, lng: loc.lng });
+    setLocationError(isWithinRaipur(loc) ? '' : SERVICE_UNAVAILABLE_MESSAGE);
   };
 
   const handleNext = () => {
+    if (!isWithinRaipur(mapCenter)) {
+      setLocationError(SERVICE_UNAVAILABLE_MESSAGE);
+      return;
+    }
+
     const fullLocation = addressDetails ? `${location} (${addressDetails})` : location;
     dispatch({ type: 'SET_PICKUP_DETAILS', payload: { location: fullLocation, date: formatDate(selectedDate), timeSlot: selectedSlot } });
     navigate('/inspection/confirm');
   };
 
-  const isValid = selectedDate && selectedSlot;
+  const isValid = selectedDate && selectedSlot && !locationError && isWithinRaipur(mapCenter);
 
   return (
     <div className="screen screen-with-header" id="pickup-details-screen">
@@ -57,8 +83,10 @@ export default function PickupDetails() {
           zoom={15}
           height="160px"
           showSearch={true}
-          showUserLocation={true}
+          showUserLocation={false}
           onLocationSelect={handleLocationSelect}
+          searchBounds={RAIPUR_BOUNDS}
+          searchPlaceholder="Search location in Raipur..."
           markers={[{ position: mapCenter, title: 'Pickup Location', label: location }]}
         />
         
@@ -91,12 +119,30 @@ export default function PickupDetails() {
                 } else {
                   setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
                 }
+                setLocationError(isWithinRaipur({ lat: latitude, lng: longitude }) ? '' : SERVICE_UNAVAILABLE_MESSAGE);
               }, () => {
                 setLocation('Location access denied');
+                setMapCenter(RAIPUR_CENTER);
+                setLocationError('');
               });
             }
           }}>Use Current</button>
         </div>
+
+        {locationError && (
+          <p style={{
+            marginTop: 8,
+            padding: '10px 12px',
+            borderRadius: 10,
+            background: '#FEF2F2',
+            color: '#DC2626',
+            fontSize: 13,
+            fontWeight: 600,
+            lineHeight: 1.4
+          }}>
+            {locationError}
+          </p>
+        )}
 
         <div className="form-group" style={{ marginTop: 12 }}>
           <label className="form-label">Additional Address Details</label>

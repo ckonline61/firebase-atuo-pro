@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../config/firebase';
 import Header from '../../components/Header';
 import './Profile.css';
 
@@ -19,9 +21,15 @@ export default function ProfileScreen() {
     { icon: '⚙️', label: 'Settings', path: '/profile/settings' },
   ];
 
-  const handleLogout = () => {
-    dispatch({ type: 'LOGOUT' });
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      dispatch({ type: 'LOGOUT' });
+      navigate('/login', { replace: true });
+    }
   };
 
   return (

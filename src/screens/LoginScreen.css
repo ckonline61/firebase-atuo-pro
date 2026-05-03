@@ -74,6 +74,90 @@
   background: var(--gray-200);
 }
 
+.phone-login-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.phone-input-row,
+.otp-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.phone-prefix,
+.phone-input {
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+  min-height: 46px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.phone-prefix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  color: var(--gray-700);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.phone-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+  color: var(--gray-900);
+  outline: none;
+}
+
+.phone-input:focus {
+  border-color: var(--primary-red);
+}
+
+.phone-send-btn {
+  min-height: 46px;
+  border: none;
+  border-radius: 10px;
+  background: var(--gray-900);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.phone-send-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.phone-verify-btn {
+  background: var(--primary-red);
+}
+
+.otp-message {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--gray-600);
+}
+
+.recaptcha-inline {
+  min-height: 0;
+}
+
+.recaptcha-inline .grecaptcha-badge {
+  position: static !important;
+  box-shadow: none !important;
+  margin-top: 4px;
+}
+
 .login-terms {
   text-align: center;
   font-size: 12px;

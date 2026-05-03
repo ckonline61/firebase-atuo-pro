@@ -1,24 +1,38 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../config/firebase';
 import Header from '../../components/Header';
 import './ProfilePages.css';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { state, dispatch } = useApp();
+  const { dispatch } = useApp();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [locationEnabled, setLocationEnabled] = useState(true);
 
-  const handleDeleteAccount = () => {
-    dispatch({ type: 'LOGOUT' });
-    navigate('/login');
+  const handleDeleteAccount = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Delete account logout error:', error);
+    } finally {
+      dispatch({ type: 'LOGOUT' });
+      navigate('/login', { replace: true });
+    }
   };
 
-  const handleLogout = () => {
-    dispatch({ type: 'LOGOUT' });
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      dispatch({ type: 'LOGOUT' });
+      navigate('/login', { replace: true });
+    }
   };
 
   return (

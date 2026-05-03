@@ -1,13 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { auth, googleProvider } from '../config/firebase';
-import { signInWithRedirect, signInWithPopup, getRedirectResult } from 'firebase/auth';
+import {
+  RecaptchaVerifier,
+  getRedirectResult,
+  signInWithPhoneNumber,
+  signInWithPopup,
+  signInWithRedirect,
+  updateProfile
+} from 'firebase/auth';
 import './LoginScreen.css';
 
 export default function LoginScreen() {
   const navigate = useNavigate();
   const { dispatch } = useApp();
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [pendingPhoneUser, setPendingPhoneUser] = useState(null);
+  const [customerName, setCustomerName] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpMessage, setOtpMessage] = useState('');
 
   // Check redirect result on page load (for APK/mobile)
   useEffect(() => {
@@ -32,6 +46,122 @@ export default function LoginScreen() {
         console.error('Redirect result error:', error);
       });
   }, []);
+
+  const setLoggedInUser = (user, fallbackName = 'Auto Pro User') => {
+    dispatch({
+      type: 'SET_USER',
+      payload: {
+        uid: user.uid,
+        name: user.displayName || fallbackName,
+        email: user.email || '',
+        phone: user.phoneNumber || '',
+        photoURL: user.photoURL || null
+      }
+    });
+    navigate('/onboarding');
+  };
+
+  const getRecaptchaVerifier = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
+        size: 'invisible',
+        badge: 'inline'
+      });
+    }
+    return window.recaptchaVerifier;
+  };
+
+  const formatIndianPhone = (value) => {
+    const digits = value.replace(/\D/g, '');
+    const withoutCountry = digits.startsWith('91') && digits.length > 10 ? digits.slice(2) : digits;
+    return `+91${withoutCountry.slice(-10)}`;
+  };
+
+  const handleSendOtp = async () => {
+    const digits = phone.replace(/\D/g, '');
+    const normalizedDigits = digits.startsWith('91') && digits.length > 10 ? digits.slice(2) : digits;
+
+    if (normalizedDigits.length !== 10) {
+      setOtpMessage('Please enter a valid 10 digit mobile number.');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpMessage('');
+
+    try {
+      const result = await signInWithPhoneNumber(auth, formatIndianPhone(phone), getRecaptchaVerifier());
+      setConfirmationResult(result);
+      setOtpMessage('OTP sent successfully.');
+    } catch (error) {
+      console.error('OTP send error:', error);
+      const messages = {
+        'auth/invalid-phone-number': 'Please enter a valid 10 digit mobile number.',
+        'auth/too-many-requests': 'Too many attempts. Please try again later.',
+        'auth/unauthorized-domain': 'This domain is not authorized in Firebase Auth settings.',
+        'auth/captcha-check-failed': 'reCAPTCHA check failed. Refresh and try again.',
+        'auth/quota-exceeded': 'SMS quota exceeded. Try later or check Firebase billing.'
+      };
+      setOtpMessage(messages[error.code] || `Could not send OTP: ${error.code || error.message}`);
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!confirmationResult) {
+      setOtpMessage('Please send OTP first.');
+      return;
+    }
+
+    if (otp.trim().length < 6) {
+      setOtpMessage('Please enter the 6 digit OTP.');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpMessage('');
+
+    try {
+      const result = await confirmationResult.confirm(otp.trim());
+      setPendingPhoneUser(result.user);
+      setCustomerName(result.user.displayName || '');
+      setOtpMessage('OTP verified. Please enter your name.');
+    } catch (error) {
+      console.error('OTP verify error:', error);
+      setOtpMessage('Invalid OTP. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handlePhoneNameSubmit = async () => {
+    const name = customerName.trim();
+
+    if (!name) {
+      setOtpMessage('Please enter your name.');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpMessage('');
+
+    try {
+      if (pendingPhoneUser && pendingPhoneUser.displayName !== name) {
+        await updateProfile(pendingPhoneUser, { displayName: name });
+      }
+      setLoggedInUser(pendingPhoneUser, name);
+    } catch (error) {
+      console.error('Name update error:', error);
+      setLoggedInUser(pendingPhoneUser, name);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     try {
@@ -121,6 +251,59 @@ export default function LoginScreen() {
             </svg>
             Continue with Google
           </button>
+
+          <div className="phone-login-card">
+            <div className="phone-input-row">
+              <span className="phone-prefix">+91</span>
+              <input
+                className="phone-input"
+                type="tel"
+                inputMode="numeric"
+                maxLength="10"
+                placeholder="Mobile number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+              />
+              <button className="phone-send-btn" onClick={handleSendOtp} disabled={otpLoading}>
+                {confirmationResult ? 'Resend' : 'Send OTP'}
+              </button>
+            </div>
+
+            {confirmationResult && (
+              <div className="otp-input-row">
+                <input
+                  className="phone-input"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength="6"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                />
+                <button className="phone-send-btn phone-verify-btn" onClick={handleVerifyOtp} disabled={otpLoading}>
+                  Verify
+                </button>
+              </div>
+            )}
+
+            {pendingPhoneUser && (
+              <div className="otp-input-row">
+                <input
+                  className="phone-input"
+                  type="text"
+                  placeholder="Your name"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                />
+                <button className="phone-send-btn phone-verify-btn" onClick={handlePhoneNameSubmit} disabled={otpLoading}>
+                  Continue
+                </button>
+              </div>
+            )}
+
+            {otpMessage && <p className="otp-message">{otpMessage}</p>}
+            <div id="login-recaptcha-container" className="recaptcha-inline"></div>
+          </div>
           
           <div className="login-divider">
             <span>or</span>
@@ -142,4 +325,3 @@ export default function LoginScreen() {
     </div>
   );
 }
-
