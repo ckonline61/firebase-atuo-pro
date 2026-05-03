@@ -1,9 +1,42 @@
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 import Header from '../../components/Header';
 import { sampleInspectionReport } from '../../data/mockData';
 import './Inspection.css';
 
 export default function InspectionReport() {
-  const report = sampleInspectionReport;
+  const { id } = useParams();
+  const [report, setReport] = useState(sampleInspectionReport);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadReport() {
+      if (!id || id === 'demo') {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const snap = await getDoc(doc(db, 'bookings', id));
+        if (!cancelled && snap.exists() && snap.data().inspectionReport) {
+          setReport({ ...sampleInspectionReport, ...snap.data().inspectionReport });
+        }
+      } catch (error) {
+        console.error('Report load error:', error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadReport();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const getScoreClass = (score) => {
     if (score >= 8) return 'score-good';
@@ -24,6 +57,7 @@ export default function InspectionReport() {
       } />
       <div className="screen-content">
         <h3 className="section-label">Overall Score</h3>
+        {loading && <p className="text-gray text-small">Loading report...</p>}
         <div className="report-score">
           <div className="report-score-circle">
             <span className="report-score-value">{report.overallScore}</span>

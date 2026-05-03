@@ -411,7 +411,7 @@ function renderBookingsTable(docs, filter) {
                 <option value="completed" ${b.status === 'completed' ? 'selected' : ''}>Completed</option>
                 <option value="cancelled" ${b.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
               </select>
-              <button class="btn btn-sm btn-primary" onclick="openBookingReport('${esc(b.id)}')" style="margin-left:6px;margin-top:6px">Report</button>
+              <button class="btn btn-sm btn-primary" onclick="openBookingReportEditor('${esc(b.id)}')" style="margin-left:6px;margin-top:6px">${b.inspectionReport ? 'Edit Report' : 'Create Report'}</button>
             </td>
           </tr>
         `).join('')}
@@ -419,8 +419,129 @@ function renderBookingsTable(docs, filter) {
     </table>`;
 }
 
-function openBookingReport(id) {
-  window.open(`/inspection/report/${encodeURIComponent(id)}`, '_blank');
+const defaultInspectionReport = {
+  overallScore: 8.2,
+  condition: 'Good Condition',
+  conditionNote: 'Well maintained car',
+  categories: [
+    { name: 'Engine', score: 8.5 },
+    { name: 'Body & Paint', score: 7.5 },
+    { name: 'Interior', score: 8 },
+    { name: 'Brakes', score: 8.5 },
+    { name: 'Electricals', score: 8 },
+    { name: 'Suspension', score: 8 },
+  ],
+};
+
+async function openBookingReportEditor(id) {
+  try {
+    const snap = await db.collection('bookings').doc(id).get();
+    if (!snap.exists) {
+      showToast('Booking not found', true);
+      return;
+    }
+
+    const booking = { id: snap.id, ...snap.data() };
+    const report = booking.inspectionReport || defaultInspectionReport;
+    renderReportEditor(booking, report);
+  } catch (e) {
+    showToast('Error loading report: ' + e.message, true);
+  }
+}
+
+function renderReportEditor(booking, report) {
+  document.getElementById('report-editor-modal')?.remove();
+
+  const categories = defaultInspectionReport.categories.map((fallback) => {
+    const saved = (report.categories || []).find(c => c.name === fallback.name);
+    return saved || fallback;
+  });
+
+  const modal = document.createElement('div');
+  modal.id = 'report-editor-modal';
+  modal.className = 'admin-modal-overlay';
+  modal.innerHTML = `
+    <div class="admin-modal report-editor">
+      <div class="report-editor-header">
+        <div>
+          <h3>Inspection Report</h3>
+          <p>${esc(booking.customerName || 'Customer')} - ${esc(booking.car || 'Car')}</p>
+        </div>
+        <button class="admin-modal-close" onclick="closeReportEditor()">x</button>
+      </div>
+
+      <div class="report-preview-card">
+        <div class="report-score-circle">
+          <input id="report-overall-score" type="number" min="0" max="10" step="0.1" value="${esc(report.overallScore ?? 8.2)}">
+          <span>/10</span>
+        </div>
+        <div class="report-condition-fields">
+          <input id="report-condition" type="text" value="${esc(report.condition || 'Good Condition')}" placeholder="Condition">
+          <input id="report-condition-note" type="text" value="${esc(report.conditionNote || 'Well maintained car')}" placeholder="Condition note">
+        </div>
+      </div>
+
+      <div class="report-category-editor">
+        ${categories.map((cat, index) => `
+          <div class="report-category-row">
+            <span class="report-dot ${Number(cat.score) >= 8 ? 'green' : Number(cat.score) >= 6 ? 'orange' : 'red'}"></span>
+            <label>${esc(cat.name)}</label>
+            <input
+              id="report-category-${index}"
+              data-name="${esc(cat.name)}"
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              value="${esc(cat.score)}"
+            >
+            <span>/10</span>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="report-editor-actions">
+        <button class="btn btn-secondary" onclick="window.open('/inspection/report/${encodeURIComponent(booking.id)}', '_blank')">View Report</button>
+        <button class="btn btn-primary" onclick="saveBookingReport('${esc(booking.id)}')">Save Report</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function closeReportEditor() {
+  document.getElementById('report-editor-modal')?.remove();
+}
+
+async function saveBookingReport(id) {
+  const categories = [...document.querySelectorAll('[id^="report-category-"]')].map(input => ({
+    name: input.dataset.name,
+    score: Number(input.value || 0),
+  }));
+
+  const report = {
+    overallScore: Number(document.getElementById('report-overall-score').value || 0),
+    condition: document.getElementById('report-condition').value.trim() || 'Good Condition',
+    conditionNote: document.getElementById('report-condition-note').value.trim() || 'Well maintained car',
+    categories,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    await db.collection('bookings').doc(id).update({
+      inspectionReport: report,
+      reportStatus: 'ready',
+      status: 'completed',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    showToast('Inspection report saved');
+    logActivity('📋', `Inspection report saved for booking ${id.slice(0, 8)}`);
+    closeReportEditor();
+    loadBookings();
+  } catch (e) {
+    showToast('Error saving report: ' + e.message, true);
+  }
 }
 
 async function updateBookingStatus(id, status) {
