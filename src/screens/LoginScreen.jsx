@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { auth, googleProvider } from '../config/firebase';
@@ -23,6 +23,7 @@ export default function LoginScreen() {
   const [customerName, setCustomerName] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpMessage, setOtpMessage] = useState('');
+  const recaptchaVerifierRef = useRef(null);
 
   // Check redirect result on page load (for APK/mobile)
   useEffect(() => {
@@ -35,6 +36,15 @@ export default function LoginScreen() {
       .catch((error) => {
         console.error('Redirect result error:', error);
       });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current.clear();
+        recaptchaVerifierRef.current = null;
+      }
+    };
   }, []);
 
   const setLoggedInUser = async (user, fallbackName = 'Auto Pro User') => {
@@ -65,14 +75,29 @@ export default function LoginScreen() {
     navigate('/onboarding');
   };
 
-  const getRecaptchaVerifier = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'login-recaptcha-container', {
-        size: 'invisible',
-        badge: 'inline'
-      });
+  const resetRecaptchaVerifier = () => {
+    if (recaptchaVerifierRef.current) {
+      recaptchaVerifierRef.current.clear();
+      recaptchaVerifierRef.current = null;
     }
-    return window.recaptchaVerifier;
+  };
+
+  const createRecaptchaVerifier = async () => {
+    resetRecaptchaVerifier();
+    const container = document.getElementById('login-recaptcha-container');
+
+    if (!container) {
+      throw new Error('reCAPTCHA container is not ready. Please refresh and try again.');
+    }
+
+    container.innerHTML = '';
+    const verifier = new RecaptchaVerifier(auth, container, {
+      size: 'invisible',
+      badge: 'inline'
+    });
+    recaptchaVerifierRef.current = verifier;
+    await verifier.render();
+    return verifier;
   };
 
   const formatIndianPhone = (value) => {
@@ -94,7 +119,7 @@ export default function LoginScreen() {
     setOtpMessage('');
 
     try {
-      const result = await signInWithPhoneNumber(auth, formatIndianPhone(phone), getRecaptchaVerifier());
+      const result = await signInWithPhoneNumber(auth, formatIndianPhone(phone), await createRecaptchaVerifier());
       setConfirmationResult(result);
       setOtpMessage('OTP sent successfully.');
     } catch (error) {
@@ -107,10 +132,7 @@ export default function LoginScreen() {
         'auth/quota-exceeded': 'SMS quota exceeded. Try later or check Firebase billing.'
       };
       setOtpMessage(messages[error.code] || `Could not send OTP: ${error.code || error.message}`);
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
-      }
+      resetRecaptchaVerifier();
     } finally {
       setOtpLoading(false);
     }

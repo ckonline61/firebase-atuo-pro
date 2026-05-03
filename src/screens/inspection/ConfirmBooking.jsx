@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from 'firebase/auth';
 import { useApp } from '../../context/AppContext';
@@ -26,19 +26,44 @@ export default function ConfirmBooking() {
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [verifyLoading, setVerifyLoading] = useState(false);
   const [verifyMessage, setVerifyMessage] = useState('');
+  const recaptchaVerifierRef = useRef(null);
 
   const carName = `${carDetails.brand || 'Honda'} ${carDetails.model || 'City'}`;
   const carInfo = `${carDetails.year || '2018'} - ${carDetails.fuelType || 'Petrol'} - ${carDetails.kmDriven || '45,000'} KM`;
   const isGuestUser = !state.user?.uid || state.user?.name === 'Guest User';
 
-  const getRecaptchaVerifier = () => {
-    if (!window.bookingRecaptchaVerifier) {
-      window.bookingRecaptchaVerifier = new RecaptchaVerifier(auth, 'booking-recaptcha-container', {
-        size: 'invisible',
-        badge: 'inline'
-      });
+  useEffect(() => {
+    return () => {
+      if (recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current.clear();
+        recaptchaVerifierRef.current = null;
+      }
+    };
+  }, []);
+
+  const resetRecaptchaVerifier = () => {
+    if (recaptchaVerifierRef.current) {
+      recaptchaVerifierRef.current.clear();
+      recaptchaVerifierRef.current = null;
     }
-    return window.bookingRecaptchaVerifier;
+  };
+
+  const createRecaptchaVerifier = async () => {
+    resetRecaptchaVerifier();
+    const container = document.getElementById('booking-recaptcha-container');
+
+    if (!container) {
+      throw new Error('reCAPTCHA container is not ready. Please reopen this form and try again.');
+    }
+
+    container.innerHTML = '';
+    const verifier = new RecaptchaVerifier(auth, container, {
+      size: 'invisible',
+      badge: 'inline'
+    });
+    recaptchaVerifierRef.current = verifier;
+    await verifier.render();
+    return verifier;
   };
 
   const formatIndianPhone = (value) => {
@@ -65,16 +90,13 @@ export default function ConfirmBooking() {
     setVerifyMessage('');
 
     try {
-      const result = await signInWithPhoneNumber(auth, formatIndianPhone(phone), getRecaptchaVerifier());
+      const result = await signInWithPhoneNumber(auth, formatIndianPhone(phone), await createRecaptchaVerifier());
       setConfirmationResult(result);
       setVerifyMessage('OTP sent successfully.');
     } catch (error) {
       console.error('Booking OTP send error:', error);
       setVerifyMessage(VERIFY_ERROR_MESSAGES[error.code] || `Could not send OTP: ${error.code || error.message}`);
-      if (window.bookingRecaptchaVerifier) {
-        window.bookingRecaptchaVerifier.clear();
-        window.bookingRecaptchaVerifier = null;
-      }
+      resetRecaptchaVerifier();
     } finally {
       setVerifyLoading(false);
     }
