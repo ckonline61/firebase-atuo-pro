@@ -63,7 +63,8 @@
   cursor: not-allowed;
 }
 
-.google-login-message {
+.google-login-message,
+.login-feature-message {
   margin: -4px 0 0;
   font-size: 12px;
   line-height: 1.4;

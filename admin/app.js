@@ -28,6 +28,7 @@ const defaultFeatures = [
   { id: 'emergency', name: 'Emergency Services', icon: '🚨', desc: 'Jump starter & roadside assistance', enabled: true },
   { id: 'whatsapp_support', name: 'WhatsApp Support', icon: '💬', desc: 'Floating WhatsApp button', enabled: true },
   { id: 'google_login', name: 'Google Login', icon: '🔐', desc: 'Sign in with Google', enabled: true },
+  { id: 'phone_login', name: 'OTP Login', icon: 'Phone', desc: 'Sign in with mobile OTP', enabled: true },
   { id: 'guest_mode', name: 'Guest Mode (Skip)', icon: '👤', desc: 'Allow skip login', enabled: true },
   { id: 'refer_earn', name: 'Refer & Earn', icon: '🎁', desc: 'Referral program', enabled: true },
   { id: 'payment_online', name: 'Online Payment', icon: '💳', desc: 'UPI/Card payments', enabled: true },
@@ -577,10 +578,13 @@ async function openBookingReportEditor(id) {
 function renderReportEditor(booking, report) {
   document.getElementById('report-editor-modal')?.remove();
 
-  const categories = defaultInspectionReport.categories.map((fallback) => {
+  const defaultNames = defaultInspectionReport.categories.map(c => c.name);
+  const defaultCategories = defaultInspectionReport.categories.map((fallback) => {
     const saved = (report.categories || []).find(c => c.name === fallback.name);
     return saved || fallback;
   });
+  const customCategories = (report.categories || []).filter(c => !defaultNames.includes(c.name));
+  const categories = [...defaultCategories, ...customCategories];
 
   const modal = document.createElement('div');
   modal.id = 'report-editor-modal';
@@ -608,12 +612,18 @@ function renderReportEditor(booking, report) {
 
       <div class="report-category-editor">
         ${categories.map((cat, index) => `
-          <div class="report-category-row">
+          <div class="report-category-row" data-report-row>
             <span class="report-dot ${Number(cat.score) >= 8 ? 'green' : Number(cat.score) >= 6 ? 'orange' : 'red'}"></span>
-            <label>${esc(cat.name)}</label>
+            <input
+              class="report-category-name-input"
+              type="text"
+              value="${esc(cat.name)}"
+              placeholder="Item name"
+              ${defaultNames.includes(cat.name) ? 'readonly' : ''}
+            >
             <input
               id="report-category-${index}"
-              data-name="${esc(cat.name)}"
+              class="report-category-score-input"
               type="number"
               min="0"
               max="10"
@@ -621,9 +631,12 @@ function renderReportEditor(booking, report) {
               value="${esc(cat.score)}"
             >
             <span>/10</span>
+            <button class="report-row-remove" onclick="removeReportCategoryRow(this)" ${defaultNames.includes(cat.name) ? 'disabled' : ''}>x</button>
           </div>
         `).join('')}
       </div>
+
+      <button class="btn btn-outline report-add-custom" onclick="addReportCategoryRow()">Add Custom Item</button>
 
       <div class="report-editor-actions">
         <button class="btn btn-secondary" onclick="window.open('/inspection/report/${encodeURIComponent(booking.id)}', '_blank')">View Report</button>
@@ -639,11 +652,35 @@ function closeReportEditor() {
   document.getElementById('report-editor-modal')?.remove();
 }
 
+function addReportCategoryRow() {
+  const container = document.querySelector('.report-category-editor');
+  if (!container) return;
+
+  const row = document.createElement('div');
+  row.className = 'report-category-row';
+  row.dataset.reportRow = 'true';
+  row.innerHTML = `
+    <span class="report-dot green"></span>
+    <input class="report-category-name-input" type="text" placeholder="Custom item">
+    <input class="report-category-score-input" type="number" min="0" max="10" step="0.1" value="8">
+    <span>/10</span>
+    <button class="report-row-remove" onclick="removeReportCategoryRow(this)">x</button>
+  `;
+  container.appendChild(row);
+  row.querySelector('.report-category-name-input')?.focus();
+}
+
+function removeReportCategoryRow(button) {
+  button.closest('[data-report-row]')?.remove();
+}
+
 async function saveBookingReport(id) {
-  const categories = [...document.querySelectorAll('[id^="report-category-"]')].map(input => ({
-    name: input.dataset.name,
-    score: Number(input.value || 0),
-  }));
+  const categories = [...document.querySelectorAll('[data-report-row]')]
+    .map(row => ({
+      name: row.querySelector('.report-category-name-input')?.value.trim(),
+      score: Number(row.querySelector('.report-category-score-input')?.value || 0),
+    }))
+    .filter(cat => cat.name);
 
   const report = {
     overallScore: Number(document.getElementById('report-overall-score').value || 0),

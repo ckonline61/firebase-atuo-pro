@@ -11,6 +11,7 @@ const defaultFeatures = {
   emergency: true,
   whatsapp_support: true,
   google_login: true,
+  phone_login: true,
   guest_mode: true,
   refer_earn: true,
   payment_online: true,

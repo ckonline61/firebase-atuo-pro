@@ -922,11 +922,35 @@ body {
 
 .report-category-row {
   display: grid;
-  grid-template-columns: 12px 1fr 86px 34px;
+  grid-template-columns: 12px 1fr 86px 34px 34px;
   align-items: center;
   gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid var(--border);
+}
+
+.report-category-name-input[readonly] {
+  opacity: 0.85;
+}
+
+.report-row-remove {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.report-row-remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.report-add-custom {
+  width: auto;
+  margin-top: 14px;
 }
 
 .report-dot {

@@ -1,12 +1,41 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import Header from '../../components/Header';
+import { db } from '../../config/firebase';
 import './Inspection.css';
 
 export default function InspectionCompleted() {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [rating, setRating] = useState(5);
-  const [review, setReview] = useState('Great service! Mechanic was polite and very professional.');
+  const [review, setReview] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const handleSubmitReview = async () => {
+    setSaving(true);
+    setMessage('');
+
+    try {
+      if (id && id !== 'demo') {
+        await updateDoc(doc(db, 'bookings', id), {
+          customerReview: {
+            rating,
+            review: review.trim(),
+            createdAt: serverTimestamp(),
+          },
+          updatedAt: serverTimestamp(),
+        });
+      }
+      navigate(`/inspection/report/${id || 'demo'}`);
+    } catch (error) {
+      console.error('Review save error:', error);
+      setMessage('Review save nahi hua. Please dobara try karein.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="screen screen-with-header" id="inspection-completed-screen">
@@ -15,7 +44,7 @@ export default function InspectionCompleted() {
         <div className="review-section">
           <h3 className="review-title">How was your experience?</h3>
           <div className="stars">
-            {[1,2,3,4,5].map(star => (
+            {[1, 2, 3, 4, 5].map(star => (
               <span
                 key={star}
                 className={`star ${star <= rating ? 'filled' : ''}`}
@@ -36,17 +65,14 @@ export default function InspectionCompleted() {
           id="review-text"
         />
 
-        <label className="form-label">Add Photos (optional)</label>
-        <div className="review-photos">
-          <div className="review-photo-add">+</div>
-        </div>
+        {message && <p className="text-small text-red mt-12">{message}</p>}
 
-        <button className="btn btn-primary mt-24" onClick={() => navigate('/inspection/report/demo')} id="btn-submit-review">
-          Submit Review
+        <button className="btn btn-primary mt-24" onClick={handleSubmitReview} id="btn-submit-review" disabled={saving}>
+          {saving ? 'Submitting...' : 'Submit Review'}
         </button>
         <button
           className="btn btn-secondary mt-12"
-          onClick={() => navigate('/inspection/report/demo')}
+          onClick={() => navigate(`/inspection/report/${id || 'demo'}`)}
           id="btn-view-report"
         >
           View Report
